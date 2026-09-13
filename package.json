@@ -1,0 +1,16 @@
+{
+  "name": "reticla",
+  "private": true,
+  "workspaces": ["apps/web"],
+  "scripts": {
+    "dev": "npm run dev -w @reticla/web",
+    "build": "npm run build -w @reticla/web",
+    "lint": "npm run lint -w @reticla/web",
+    "typecheck": "npm run typecheck -w @reticla/web",
+    "test": "npm run test -w @reticla/web",
+    "db:generate": "npm run db:generate -w @reticla/web",
+    "db:migrate": "npm run db:migrate -w @reticla/web",
+    "backend:check": "npm run backend:check -w @reticla/web",
+    "test:ownership": "npm run test:ownership -w @reticla/web"
+  }
+}

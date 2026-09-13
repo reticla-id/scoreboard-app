@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Profile {
+  id          String   @id @db.Uuid
+  displayName String   @map("display_name") @db.VarChar(80)
+  username    String   @unique @db.VarChar(30)
+  avatarUrl   String?  @map("avatar_url") @db.VarChar(500)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sessions    Session[]
+
+  @@map("profiles")
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId   String   @map("owner_id") @db.Uuid
+  owner     Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String   @db.VarChar(120)
+  date      DateTime @db.Date
+  startTime String?  @map("start_time") @db.VarChar(5)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  sport     String   @db.VarChar(16)
+  partnerMode String @default("RANDOM") @map("partner_mode") @db.VarChar(16)
+  fixedPairs Json @default("[]") @map("fixed_pairs")
+  location  String?  @db.VarChar(120)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  players   Player[]
+  teams     Team[]
+  matches   Match[]
+  rounds    Round[]
+
+  @@index([ownerId, date])
+  @@map("sessions")
+}
+
+model Player {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name      String   @db.VarChar(80)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  removedAt DateTime? @map("removed_at") @db.Timestamptz(6)
+  teamsAsOne Team[] @relation("TeamPlayerOne")
+  teamsAsTwo Team[] @relation("TeamPlayerTwo")
+  matchEvents MatchEvent[]
+
+  @@unique([sessionId, id])
+  @@index([sessionId, createdAt])
+  @@map("players")
+}
+
+model Team {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId   String   @map("session_id") @db.Uuid
+  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  playerOneId String   @map("player_one_id") @db.Uuid
+  playerOne   Player   @relation("TeamPlayerOne", fields: [sessionId, playerOneId], references: [sessionId, id], onDelete: Cascade)
+  playerTwoId String   @map("player_two_id") @db.Uuid
+  playerTwo   Player   @relation("TeamPlayerTwo", fields: [sessionId, playerTwoId], references: [sessionId, id], onDelete: Cascade)
+  matchesAsA  Match[]  @relation("MatchTeamA")
+  matchesAsB  Match[]  @relation("MatchTeamB")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([sessionId, id])
+  @@index([sessionId])
+  @@map("teams")
+}
+
+model Match {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  roundId   String   @map("round_id") @db.Uuid
+  round     Round    @relation(fields: [sessionId, roundId], references: [sessionId, id], onDelete: Cascade)
+  teamAId   String   @map("team_a_id") @db.Uuid
+  teamA     Team     @relation("MatchTeamA", fields: [sessionId, teamAId], references: [sessionId, id], onDelete: Cascade)
+  teamBId   String   @map("team_b_id") @db.Uuid
+  teamB     Team     @relation("MatchTeamB", fields: [sessionId, teamBId], references: [sessionId, id], onDelete: Cascade)
+  position  Int
+  status    String   @default("UPCOMING") @db.VarChar(16)
+  scoreA    Int?     @map("score_a")
+  scoreB    Int?     @map("score_b")
+  events    MatchEvent[]
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([roundId, position])
+  @@unique([sessionId, id])
+  @@map("matches")
+}
+
+model MatchEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  matchId   String   @map("match_id") @db.Uuid
+  playerId  String   @map("player_id") @db.Uuid
+  type      String   @db.VarChar(2)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  match     Match    @relation(fields: [sessionId, matchId], references: [sessionId, id], onDelete: Cascade)
+  player    Player   @relation(fields: [sessionId, playerId], references: [sessionId, id], onDelete: Cascade)
+
+  @@index([matchId, playerId, type])
+  @@map("match_events")
+}
+
+model Round {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId        String   @map("session_id") @db.Uuid
+  session          Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  number           Int
+  waitingPlayerIds String[] @default([]) @map("waiting_player_ids") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  matches          Match[]
+
+  @@unique([sessionId, number])
+  @@unique([sessionId, id])
+  @@map("rounds")
+}
