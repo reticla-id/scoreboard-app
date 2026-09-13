@@ -6,6 +6,7 @@ import { importPlayers } from "./actions";
 import { meaningfulRows, parseCsv, parseText, type ImportRow } from "./import-parser";
 import { MAX_IMPORT_FILE_BYTES, playerNameKey, playerNameSchema } from "./validation";
 import type { RosterPlayer } from "./roster";
+import { ArrowUpRightIcon } from "@/components/action-icons";
 
 type PreviewRow = { line: number; name: string; error?: string; selected: boolean };
 
@@ -29,7 +30,7 @@ function buildPreview(raw: ImportRow[], existing: RosterPlayer[]): PreviewRow[] 
 
 function ImportButton({ count }: { count: number }) {
   const { pending } = useFormStatus();
-  return <button className="button" type="submit" disabled={pending || count === 0}>{pending ? "Importing…" : `Import ${count} player${count === 1 ? "" : "s"} ↗`}</button>;
+  return <button className="button" type="submit" disabled={pending || count === 0}>{pending ? "Importing…" : <>Import {count} player{count === 1 ? "" : "s"} <ArrowUpRightIcon /></>}</button>;
 }
 
 export function ImportPanel({ sessionId, players }: { sessionId: string; players: RosterPlayer[] }) {

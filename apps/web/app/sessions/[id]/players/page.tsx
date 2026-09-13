@@ -30,6 +30,7 @@ export default async function PlayersPage({ params }: { params: Promise<{ id: st
     <WorkspaceHeader profile={profile} />
     <BackLink href={`/sessions/${session.id}`} />
     <header className="session-workspace-head"><p className="eyebrow"><span className="dot" /> {session.sportConfig.name.toUpperCase()} / SESSION <span className={`status-chip status-${lifecycle.toLowerCase()}`}>{lifecycle}</span></p><h1>{session.name}</h1><SessionTabs sessionId={session.id} active="players" /></header>
+    <div className="session-section-heading"><h2>PLAYERS.</h2></div>
     <Roster players={players} sessionId={session.id} readOnly={!!session.completedAt || fixedConfigurationLocked} lockReason={fixedConfigurationLocked ? "Reset Matches before changing a fixed-partner roster." : undefined} minimumPlayers={session.sportConfig.rules.minimumPlayers} sportName={session.sportConfig.name} />
     {players.length > 0 && <PartnerModePanel sessionId={session.id} players={players} mode={partnerMode} pairs={fixedPairs} locked={!!session.completedAt || roundCount > 0} hasRounds={roundCount > 0} completed={!!session.completedAt} />}
     <GenerateRoundForm sessionId={session.id} nextNumber={roundCount + 1} availability={availability} locked={!!session.completedAt} />

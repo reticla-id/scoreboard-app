@@ -3,10 +3,11 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { createProfile, type ProfileState } from "@/features/profile/actions";
+import { ArrowUpRightIcon } from "@/components/action-icons";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-  return <button className="button button-full" type="submit" disabled={pending}>{pending ? "Saving…" : "Open home"}<span aria-hidden="true">↗</span></button>;
+  return <button className="button button-full" type="submit" disabled={pending}>{pending ? "Saving…" : "Open home"}<ArrowUpRightIcon /></button>;
 }
 
 export function ProfileForm() {

@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { ArrowUpRightIcon } from "@/components/action-icons";
 import { CalendarDatePicker } from "@/components/calendar-date-picker";
 import type { SessionFormState } from "@/features/sessions/actions";
 import { todayKey } from "@/features/sessions/dates";
@@ -12,7 +13,7 @@ type Action = (state: SessionFormState, formData: FormData) => Promise<SessionFo
 
 function SubmitButton({ mode }: { mode: "create" | "edit" }) {
   const { pending } = useFormStatus();
-  return <button className="button" disabled={pending} type="submit">{pending ? "Saving…" : mode === "create" ? "Host Session" : "Save changes"}<span aria-hidden="true">↗</span></button>;
+  return <button className="button" disabled={pending} type="submit">{pending ? "Saving…" : mode === "create" ? "Host Session" : "Save changes"}<ArrowUpRightIcon /></button>;
 }
 
 export function SessionForm({ action, mode, values }: { action: Action; mode: "create" | "edit"; values?: { name: string; date: string; startTime: string | null; location: string; sport: string } }) {

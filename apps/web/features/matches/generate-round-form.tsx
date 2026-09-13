@@ -3,10 +3,11 @@
 import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { generateRound, type GenerateState } from "./actions";
+import { ArrowUpRightIcon } from "@/components/action-icons";
 
 function GenerateButton({ number, enabled }: { number: number; enabled: boolean }) {
   const { pending } = useFormStatus();
-  return <button className="button" type="submit" disabled={pending || !enabled} aria-keyshortcuts={enabled ? "G" : undefined} title={enabled ? "Generate round (G)" : undefined}>{pending ? "Generating round…" : `Generate Round ${number} ↗`}</button>;
+  return <button className="button" type="submit" disabled={pending || !enabled} aria-keyshortcuts={enabled ? "G" : undefined} title={enabled ? "Generate round (G)" : undefined}>{pending ? "Generating round…" : <>Generate Round {number} <ArrowUpRightIcon /></>}</button>;
 }
 
 export function GenerateRoundForm({ sessionId, nextNumber, availability, locked = false }: { sessionId: string; nextNumber: number; availability: { enabled: boolean; message: string }; locked?: boolean }) {

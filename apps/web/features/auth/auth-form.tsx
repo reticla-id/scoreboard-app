@@ -4,10 +4,11 @@ import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { signIn, signUp, type AuthState } from "@/features/auth/actions";
 import { createClient } from "@/lib/supabase/browser";
+import { ArrowUpRightIcon } from "@/components/action-icons";
 
 function SubmitButton({ mode }: { mode: "in" | "up" }) {
   const { pending } = useFormStatus();
-  return <button className="button button-full" disabled={pending} type="submit">{pending ? "Please wait…" : mode === "in" ? "Sign in" : "Create account"}<span aria-hidden="true">↗</span></button>;
+  return <button className="button button-full" disabled={pending} type="submit">{pending ? "Please wait…" : mode === "in" ? "Sign in" : "Create account"}<ArrowUpRightIcon /></button>;
 }
 
 export function AuthForm({ mode }: { mode: "in" | "up" }) {

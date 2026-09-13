@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { SPORT_OPTIONS, sportName, type AvailableSportCode } from "@/features/sports/catalog";
+import { ArrowUpRightIcon } from "@/components/action-icons";
 
 export function SportSelector({ value, onSelect }: { value: AvailableSportCode | null; onSelect: (code: AvailableSportCode) => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -9,7 +10,7 @@ export function SportSelector({ value, onSelect }: { value: AvailableSportCode |
   return <div className="session-form-field">
     <span className="session-field-label">Sport</span>
     <button className="sport-selector-trigger" type="button" onClick={() => dialog.current?.showModal()} aria-haspopup="dialog">
-      <span className="sport-selector-icon" aria-hidden="true">{value ? "◉" : "+"}</span><strong>{value ? sportName(value) : "Select sport"}</strong><span className="muted">{value ? "Change sport ↗" : "Choose before continuing ↗"}</span>
+      <span className="sport-selector-icon" aria-hidden="true">{value ? "◉" : "+"}</span><strong>{value ? sportName(value) : "Select sport"}</strong><span className="muted">{value ? "Change sport" : "Choose before continuing"} <ArrowUpRightIcon /></span>
     </button>
     <dialog className="sport-dialog" ref={dialog} aria-labelledby="sport-dialog-title" onClick={(event) => { if (event.target === dialog.current) dialog.current.close(); }}>
       <div className="sport-dialog-head"><div><span className="panel-index">SESSION SPORT</span><h2 id="sport-dialog-title">CHOOSE A SPORT.</h2></div><button type="button" aria-label="Close sport selection" onClick={() => dialog.current?.close()}>×</button></div>

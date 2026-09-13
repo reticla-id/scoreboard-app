@@ -44,7 +44,7 @@ export function PartnerModePanel({ sessionId, players, mode, pairs, locked, hasR
   }
 
   return <section className="partner-mode-section" aria-labelledby="partner-mode-heading">
-    <div className="partner-mode-heading"><span className="panel-index">SETUP / 02</span><h2 id="partner-mode-heading">PARTNERS.</h2></div>
+    <div className="partner-mode-heading"><span className="panel-index">SETUP / 02</span><h3 id="partner-mode-heading">PARTNERS.</h3></div>
     <div className="partner-mode-switch" role="group" aria-label="Partner mode">
       <button type="button" aria-pressed={mode === "RANDOM"} disabled={locked || pending} onClick={() => changeMode("RANDOM")}><strong>Random Partners</strong><small>Different teammates across matches</small></button>
       <button type="button" aria-pressed={mode === "FIXED"} disabled={locked || pending} onClick={() => changeMode("FIXED")}><strong>Fixed Partners</strong><small>Keep your partner every match</small></button>
