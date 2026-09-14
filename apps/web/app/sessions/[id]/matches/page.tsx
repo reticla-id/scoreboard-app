@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { BackLink } from "@/components/back-link";
 import { WorkspaceHeader } from "@/components/workspace-header";
-import { SessionTabs } from "@/components/session-tabs";
+import { SessionWorkspaceHeading } from "@/components/session-workspace-heading";
+import { AppFooter } from "@/components/app-footer";
 import { requireWorkspace } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getOwnedSession } from "@/features/sessions/data";
-import { sessionLifecycle } from "@/features/sessions/dates";
 import { MatchWorkspace, type RoundView } from "@/features/matches/match-workspace";
 
 export const metadata: Metadata = { title: "Matches" };
@@ -36,12 +36,11 @@ export default async function MatchesPage({ params, searchParams }: { params: Pr
   }) : [];
   const names = new Map(players.map((player) => [player.id, player.name]));
   const current: RoundView | null = selected ? { id: selected.id, number: selected.number, matchCount: selected._count.matches, waiting: selected.waitingPlayerIds.map((playerId) => names.get(playerId) ?? "Former player"), matches: matches.map((match) => ({ id: match.id, updatedAt: match.updatedAt.toISOString(), position: match.position, status: match.status, scoreA: match.scoreA, scoreB: match.scoreB, teamA: [{ id: match.teamA.playerOne.id, name: match.teamA.playerOne.name }, { id: match.teamA.playerTwo.id, name: match.teamA.playerTwo.name }], teamB: [{ id: match.teamB.playerOne.id, name: match.teamB.playerOne.name }, { id: match.teamB.playerTwo.id, name: match.teamB.playerTwo.name }], eventCounts: eventCounts.filter((entry) => entry.matchId === match.id).map((entry) => ({ playerId: entry.playerId, type: entry.type, count: entry._count._all })) })) } : null;
-  const lifecycle = sessionLifecycle(session);
   return <main className="site-shell workspace-page">
     <WorkspaceHeader profile={profile} />
     <BackLink href={`/sessions/${id}`} />
-    <header className="session-workspace-head"><p className="eyebrow"><span className="dot" /> {session.sportConfig.name.toUpperCase()} / SESSION <span className={`status-chip status-${lifecycle.toLowerCase()}`}>{lifecycle}</span></p><h1>{session.name}</h1><SessionTabs sessionId={session.id} active="matches" /></header>
+    <SessionWorkspaceHeading session={session} active="matches" />
     <MatchWorkspace sessionId={session.id} rounds={rounds.map((round) => ({ id: round.id, number: round.number, matchCount: round._count.matches }))} current={current} page={page} pages={pages} completed={!!session.completedAt} minimumPlayers={session.sportConfig.rules.minimumPlayers} eventGlossary={session.sportConfig.rules.eventGlossary} />
-    <footer className="site-footer"><span>RETICLA / ALPHA VERSION</span><span>@{profile.username}</span></footer>
+    <AppFooter />
   </main>;
 }

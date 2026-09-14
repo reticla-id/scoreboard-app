@@ -163,7 +163,7 @@ function MatchLine({ match, sessionId, onGlossary, eventGlossary }: { match: Mat
   return <article className={`game-row ${status === "LIVE" ? "game-row-live" : ""} ${flash ? "game-row-flash" : ""}`}>
     <header className="game-row-label"><span>MATCH {String(match.position).padStart(2, "0")}</span><span className={`match-status match-${label.toLowerCase()}`}>{label}</span></header>
     <div className="game-row-play">
-      <div className="game-score"><span>SCORE</span><strong aria-live="polite" aria-atomic="true" aria-label={showScore ? `Team A ${visibleScore.a}, Team B ${visibleScore.b}` : "Score not entered"}>{showScore ? `${visibleScore.a} : ${visibleScore.b}` : "— : —"}</strong></div>
+      <div className="game-score"><span>SCORE</span><strong aria-live="polite" aria-atomic="true" aria-label={showScore ? `Team A ${visibleScore.a}, Team B ${visibleScore.b}` : "Score not entered"}>{showScore ? `${visibleScore.a}-${visibleScore.b}` : "-"}</strong></div>
       <div className={`game-team game-team-a ${status === "FINISHED" && visibleScore.a > visibleScore.b ? "game-winner" : ""}`}><span>TEAM A</span><strong>{match.teamA.map((player) => <span key={player.id}>{player.name}</span>)}</strong></div>
       <div className={`game-team game-team-b ${status === "FINISHED" && visibleScore.b > visibleScore.a ? "game-winner" : ""}`}><span>TEAM B</span><strong>{match.teamB.map((player) => <span key={player.id}>{player.name}</span>)}</strong></div>
     </div>

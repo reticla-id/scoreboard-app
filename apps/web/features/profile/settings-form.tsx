@@ -7,7 +7,7 @@ import { MAX_AVATAR_BYTES } from "@/features/profile/avatar";
 import { updateSettings } from "@/features/profile/settings-actions";
 
 function SaveButton({ pending }: { pending: boolean }) {
-  return <button className="button" type="submit" disabled={pending}>{pending ? "Saving…" : "Save changes"}<span aria-hidden="true">↗</span></button>;
+  return <button className="button" type="submit" disabled={pending}>{pending ? "Saving…" : "Save changes"}</button>;
 }
 
 export function SettingsForm({ displayName, username, avatarSrc }: { displayName: string; username: string; avatarSrc: string | null }) {
@@ -47,10 +47,10 @@ export function SettingsForm({ displayName, username, avatarSrc }: { displayName
     <div className="settings-avatar-row">
       {shownAvatar ? <Image className="settings-avatar" src={shownAvatar} alt="Current profile picture" width={76} height={76} unoptimized referrerPolicy="no-referrer" /> : <span className="settings-avatar settings-avatar-empty" aria-hidden="true">{displayName.slice(0, 1).toUpperCase()}</span>}
       <div className="settings-avatar-actions"><span className="settings-field-title">Profile picture</span><div className="settings-avatar-buttons">
-        <label className="settings-upload-button" htmlFor="settings-avatar">{shownAvatar ? "Change picture" : "Add picture"}</label>
+        <button className="settings-upload-button" type="button" onClick={() => fileInput.current?.click()}>{shownAvatar ? "Change picture" : "Add picture"}</button>
         {shownAvatar && <button className="settings-remove-button" type="button" onClick={() => { setRemoveAvatar(true); setPreview(null); if (fileInput.current) fileInput.current.value = ""; setFileError(null); setMessage({}); }}>Remove</button>}
       </div><span className="field-hint">PNG, JPG or WebP · up to 2 MB</span></div>
-      <input ref={fileInput} className="visually-hidden-file" id="settings-avatar" name="avatar" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => {
+      <input ref={fileInput} hidden tabIndex={-1} id="settings-avatar" name="avatar" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => {
         const file = event.currentTarget.files?.[0];
         if (!file) return;
         if (file.size > MAX_AVATAR_BYTES) { setFileError("Choose an image under 2 MB."); event.currentTarget.value = ""; return; }

@@ -6,6 +6,7 @@ import { getSessionPage, type SessionView } from "@/features/sessions/data";
 import { SessionRows } from "@/features/sessions/session-card";
 import { SessionFilters } from "@/features/sessions/session-filters";
 import { ArrowUpRightIcon } from "@/components/action-icons";
+import { AppFooter } from "@/components/app-footer";
 
 function browseUrl(path: string, page: number, date?: string, court?: string) {
   const query = new URLSearchParams();
@@ -28,6 +29,6 @@ export async function SessionBrowsePage({ view, query }: { view: SessionView; qu
     <div className="browse-toolbar"><span>{total} {history ? "finished" : "current"} session{total === 1 ? "" : "s"}</span><SessionFilters key={`${filters.date ?? ""}|${filters.court ?? ""}`} basePath={path} initialDate={filters.date} initialCourt={filters.court} /></div>
     <SessionRows sessions={sessions} view={view} grouped emptyTitle={history ? "NO HISTORY YET" : "NO SESSIONS FOUND"} emptyText={filters.date || filters.court ? "Try another date or court, or reset your filters." : history ? "Finished sessions will appear here." : "Host a session to get started."} />
     {pages > 1 && <nav className="pagination" aria-label="Session pages"><span>PAGE {page} / {pages}</span><div>{page > 1 && <Link className="button button-secondary" href={browseUrl(path, page - 1, filters.date, filters.court)}>Previous</Link>}{page < pages && <Link className="button button-secondary" href={browseUrl(path, page + 1, filters.date, filters.court)}>Next</Link>}</div></nav>}
-    <footer className="site-footer"><span>RETICLA / {history ? "SESSION HISTORY" : "SESSION CALENDAR"}</span><span>@{profile.username}</span></footer>
+    <AppFooter />
   </main>;
 }

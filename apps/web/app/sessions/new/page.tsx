@@ -12,6 +12,6 @@ export default async function NewSession() {
   return <main className="site-shell workspace-page">
     <WorkspaceHeader profile={profile} />
     <BackLink href="/home" />
-    <section className="session-editor"><p className="eyebrow"><span className="dot" /> NEW SESSION</p><h1>SET THE<br />COURT.</h1><p className="muted">Choose the sport, name it, and pick a time.</p><SessionForm action={createSession} mode="create" /></section>
+    <section className="session-editor"><p className="eyebrow"><span className="dot" /> NEW SESSION</p><h1>BUILD YOUR<br />SESSION.</h1><p className="muted">Choose the sport, name it, and pick a time.</p><SessionForm action={createSession} mode="create" /></section>
   </main>;
 }
