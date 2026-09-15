@@ -10,7 +10,7 @@ function Line({ width = "100%", height = 14, className = "" }: { width?: string;
 }
 
 function Header() {
-  return <header className="site-header workspace-header"><Brand href="/home" /><Line width="44px" height={44} className="skeleton-avatar" /></header>;
+  return <header className="site-header workspace-header"><Brand href="/home" /><Line width="48px" height={48} /></header>;
 }
 
 function SessionHeading() {
@@ -39,5 +39,5 @@ export function WorkspaceSkeleton({ view }: { view: View }) {
     return () => window.clearTimeout(timer);
   }, []);
   if (!visible) return null;
-  return <main className="site-shell workspace-page" aria-busy="true"><span className="sr-only" role="status">Loading {view}…</span><Header /><Body view={view} /></main>;
+  return <main className="site-shell workspace-page" aria-busy="true"><span className="sr-only" role="status">Loading {view}…</span>{view !== "settings" && <Header />}<Body view={view} /></main>;
 }

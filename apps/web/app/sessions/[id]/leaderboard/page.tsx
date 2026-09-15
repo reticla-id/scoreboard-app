@@ -17,7 +17,7 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ id
   const results = await calculateSessionLeaderboard(session);
   return <main className="site-shell workspace-page">
     <WorkspaceHeader profile={profile} />
-    <BackLink href={`/sessions/${id}`} />
+    <BackLink href="/home" />
     <SessionWorkspaceHeading session={session} active="leaderboard" />
     <ResultsView sessionId={id} {...results} eventGlossary={session.sportConfig.rules.eventGlossary} />
     <AppFooter />

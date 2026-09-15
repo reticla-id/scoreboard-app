@@ -10,7 +10,7 @@ function SaveButton({ pending }: { pending: boolean }) {
   return <button className="button" type="submit" disabled={pending}>{pending ? "Saving…" : "Save changes"}</button>;
 }
 
-export function SettingsForm({ displayName, username, avatarSrc }: { displayName: string; username: string; avatarSrc: string | null }) {
+export function SettingsForm({ displayName, username, email, avatarSrc }: { displayName: string; username: string; email: string; avatarSrc: string | null }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ error?: string; success?: string }>({});
   const [preview, setPreview] = useState<string | null>(null);
@@ -59,6 +59,7 @@ export function SettingsForm({ displayName, username, avatarSrc }: { displayName
       <input type="hidden" name="removeAvatar" value={removeAvatar ? "true" : "false"} />
     </div>
     <div className="settings-fields"><div><label htmlFor="settings-display-name">Display name</label><input id="settings-display-name" name="displayName" type="text" autoComplete="name" required maxLength={80} defaultValue={displayName} /></div>
+      <div><label htmlFor="settings-email">Email</label><input className="settings-readonly" id="settings-email" type="email" value={email} readOnly aria-readonly="true" /></div>
       <div><label htmlFor="settings-username">Username</label><div className="input-prefix"><span aria-hidden="true">@</span><input id="settings-username" name="username" type="text" autoComplete="username" required minLength={3} maxLength={30} pattern="[A-Za-z0-9_]+" defaultValue={username} /></div><p className="field-hint">3–30 letters, numbers, or underscores.</p></div></div>
     {(fileError || message.error) && <p className="message error" role="alert">{fileError ?? message.error}</p>}
     {message.success && !fileError && <p className="settings-save-status" role="status">{message.success}</p>}

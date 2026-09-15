@@ -3,10 +3,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
 
-export async function getUserId() {
+async function getIdentity() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
-  return error || typeof data?.claims?.sub !== "string" ? null : data.claims.sub;
+  if (error || typeof data?.claims?.sub !== "string") return null;
+  return { id: data.claims.sub, email: typeof data.claims.email === "string" ? data.claims.email : null };
+}
+
+export async function getUserId() {
+  return (await getIdentity())?.id ?? null;
 }
 
 export async function requireUserId() {
@@ -20,10 +25,11 @@ export async function getProfile(id: string) {
 }
 
 export async function requireWorkspace() {
-  const id = await requireUserId();
-  const profile = await getProfile(id);
+  const identity = await getIdentity();
+  if (!identity) redirect("/sign-in");
+  const profile = await getProfile(identity.id);
   if (!profile) redirect("/profile/setup");
-  return { id, profile };
+  return { id: identity.id, email: identity.email, profile };
 }
 
 export async function redirectAuthenticatedUser() {

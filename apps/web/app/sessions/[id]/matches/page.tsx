@@ -38,7 +38,7 @@ export default async function MatchesPage({ params, searchParams }: { params: Pr
   const current: RoundView | null = selected ? { id: selected.id, number: selected.number, matchCount: selected._count.matches, waiting: selected.waitingPlayerIds.map((playerId) => names.get(playerId) ?? "Former player"), matches: matches.map((match) => ({ id: match.id, updatedAt: match.updatedAt.toISOString(), position: match.position, status: match.status, scoreA: match.scoreA, scoreB: match.scoreB, teamA: [{ id: match.teamA.playerOne.id, name: match.teamA.playerOne.name }, { id: match.teamA.playerTwo.id, name: match.teamA.playerTwo.name }], teamB: [{ id: match.teamB.playerOne.id, name: match.teamB.playerOne.name }, { id: match.teamB.playerTwo.id, name: match.teamB.playerTwo.name }], eventCounts: eventCounts.filter((entry) => entry.matchId === match.id).map((entry) => ({ playerId: entry.playerId, type: entry.type, count: entry._count._all })) })) } : null;
   return <main className="site-shell workspace-page">
     <WorkspaceHeader profile={profile} />
-    <BackLink href={`/sessions/${id}`} />
+    <BackLink href="/home" />
     <SessionWorkspaceHeading session={session} active="matches" />
     <MatchWorkspace sessionId={session.id} rounds={rounds.map((round) => ({ id: round.id, number: round.number, matchCount: round._count.matches }))} current={current} page={page} pages={pages} completed={!!session.completedAt} minimumPlayers={session.sportConfig.rules.minimumPlayers} eventGlossary={session.sportConfig.rules.eventGlossary} />
     <AppFooter />

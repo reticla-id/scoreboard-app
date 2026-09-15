@@ -41,7 +41,7 @@ export default async function DocsPage() {
 
         <section id="hosting-a-session"><h2>Hosting a Session</h2><ol><li>Tap <strong>Host Session</strong>.</li><li>Enter a session name.</li><li>Select the sport.</li><li>Choose a date and time.</li><li>Save the session.</li></ol><p>Your session will appear in Home and Sessions.</p></section>
 
-        <section id="session-status"><h2>Session Status</h2><h3>Upcoming</h3><p>A session scheduled for a future date and time.</p><h3>Active</h3><p>A session currently in progress.</p><h3>History</h3><p>A session that has been marked as finished.</p></section>
+        <section id="session-status"><h2>Session Status</h2><h3>Upcoming</h3><p>A session scheduled for a future date.</p><h3>Active</h3><p>A session scheduled for today.</p><h3>History</h3><p>A past or manually finished session. Past sessions stay editable until you choose Finish Session.</p></section>
 
         <section id="adding-players"><h2>Adding Players</h2><p>Open a session and navigate to <strong>Players</strong>.</p><p>You can:</p><ul><li>Add players manually.</li><li>Import players from a list.</li><li>Edit player names.</li><li>Remove players.</li></ul><p>A minimum of 4 players is required to generate matches for Padel.</p></section>
 

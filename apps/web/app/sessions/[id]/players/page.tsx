@@ -27,7 +27,7 @@ export default async function PlayersPage({ params }: { params: Promise<{ id: st
   const availability = session.sportConfig.rules.padelRoundAvailability(partnerMode, players, fixedPairs, session.sportConfig.rules.minimumPlayers);
   return <main className="site-shell workspace-page">
     <WorkspaceHeader profile={profile} />
-    <BackLink href={`/sessions/${session.id}`} />
+    <BackLink href="/home" />
     <SessionWorkspaceHeading session={session} active="players" />
     <div className="session-section-heading"><h2>PLAYERS.</h2></div>
     <Roster players={players} sessionId={session.id} readOnly={!!session.completedAt || fixedConfigurationLocked} lockReason={fixedConfigurationLocked ? "Reset Matches before changing a fixed-partner roster." : undefined} minimumPlayers={session.sportConfig.rules.minimumPlayers} sportName={session.sportConfig.name} />

@@ -38,10 +38,11 @@ test("session creation requires the supported sport and edit ignores sport chang
   if (details.success) assert.equal(Object.hasOwn(details.data, "sport"), false);
 });
 
-test("session lifecycle follows court-local schedule and explicit finish", () => {
+test("session lifecycle uses calendar history while explicit finish remains the lock", () => {
   const session = { date: dateFromInput("2026-09-13"), startTime: "19:00", completedAt: null };
-  assert.equal(sessionLifecycle(session, new Date("2026-09-13T11:59:00Z")), "Upcoming");
-  assert.equal(sessionLifecycle(session, new Date("2026-09-13T12:00:00Z")), "Active");
+  assert.equal(sessionLifecycle(session, new Date("2026-09-12T12:00:00Z")), "Upcoming");
+  assert.equal(sessionLifecycle(session, new Date("2026-09-13T01:00:00Z")), "Active");
+  assert.equal(sessionLifecycle(session, new Date("2026-09-14T01:00:00Z")), "History");
   assert.equal(sessionLifecycle({ ...session, completedAt: new Date("2026-09-13T10:00:00Z") }, new Date("2026-09-13T11:59:00Z")), "History");
   assert.equal(sessionLifecycle({ ...session, startTime: null }, new Date("2026-09-13T00:00:00Z")), "Active");
 });

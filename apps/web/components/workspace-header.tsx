@@ -1,10 +1,9 @@
 import { Brand } from "@/components/brand";
-import { ProfileMenu } from "@/components/profile-menu";
-import { avatarSource } from "@/features/profile/avatar";
+import Link from "next/link";
 
 export function WorkspaceHeader({ profile }: { profile: { displayName: string; avatarUrl: string | null; updatedAt: Date } }) {
   return <header className="site-header workspace-header">
     <Brand href="/home" />
-    <ProfileMenu name={profile.displayName} avatarSrc={avatarSource(profile.avatarUrl, profile.updatedAt)} />
+    <Link className="settings-menu-link" href="/settings" aria-label={`Open Profile and Settings for ${profile.displayName}`}><span /><span /><span /></Link>
   </header>;
 }

@@ -2,7 +2,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { dateFromInput } from "@/features/sessions/dates";
+import { courtDateKey, dateFromInput } from "@/features/sessions/dates";
 import { sessionIdSchema, sessionSchema } from "@/features/sessions/schema";
 import { resolveSport } from "@/features/sports/sport-registry";
 
@@ -20,9 +20,10 @@ const previewSelect = {
 } as const;
 
 export async function getHomeSessions(ownerId: string) {
+  const today = dateFromInput(courtDateKey());
   return Promise.all([
-    db().session.findMany({ where: { ownerId, completedAt: null }, select: previewSelect, orderBy: [{ date: "asc" }, { startTime: { sort: "asc", nulls: "last" } }, { id: "asc" }], take: 3 }),
-    db().session.findMany({ where: { ownerId, completedAt: { not: null } }, select: previewSelect, orderBy: [{ date: "desc" }, { startTime: { sort: "desc", nulls: "last" } }, { id: "desc" }], take: 3 }),
+    db().session.findMany({ where: { ownerId, completedAt: null, date: { gte: today } }, select: previewSelect, orderBy: [{ date: "asc" }, { startTime: { sort: "asc", nulls: "last" } }, { id: "asc" }], take: 3 }),
+    db().session.findMany({ where: { ownerId, OR: [{ completedAt: { not: null } }, { date: { lt: today } }] }, select: previewSelect, orderBy: [{ date: "desc" }, { startTime: { sort: "desc", nulls: "last" } }, { id: "desc" }], take: 3 }),
   ]);
 }
 
@@ -39,10 +40,15 @@ export function normalizeSessionFilters(filters: SessionFilters): SessionFilters
 export async function getSessionPage(ownerId: string, page: number, view: SessionView, filters: SessionFilters = {}) {
   const take = 20;
   const clean = normalizeSessionFilters(filters);
+  const today = dateFromInput(courtDateKey());
   const where: Prisma.SessionWhereInput = {
     ownerId,
-    completedAt: view === "history" ? { not: null } : null,
-    ...(clean.date ? { date: dateFromInput(clean.date) } : {}),
+    AND: [
+      view === "history"
+        ? { OR: [{ completedAt: { not: null } }, { date: { lt: today } }] }
+        : { completedAt: null, date: { gte: today } },
+      ...(clean.date ? [{ date: dateFromInput(clean.date) }] : []),
+    ],
     ...(clean.court ? { location: { contains: clean.court, mode: "insensitive" } } : {}),
   };
   const orderBy: Prisma.SessionOrderByWithRelationInput[] = view === "history"
