@@ -18,7 +18,7 @@ export default async function EditSession({ params }: { params: Promise<{ id: st
   return <main className="site-shell workspace-page">
     <WorkspaceHeader profile={profile} />
     <BackLink href="/home" />
-    <section className="session-editor"><p className="eyebrow"><span className="dot" /> SESSION SETTINGS</p><h1>EDIT THE<br />DETAILS.</h1><SessionForm action={updateSession.bind(null, id)} mode="edit" values={{ name: session.name, date: dateKey(session.date), startTime: session.startTime, location: session.location || "", sport: session.sport }} /></section>
+    <section className="session-editor"><p className="eyebrow"><span className="dot" /> SESSION SETTINGS</p><h1>EDIT THE<br />DETAILS.</h1><SessionForm action={updateSession.bind(null, id)} mode="edit" values={{ name: session.name, date: dateKey(session.date), startTime: session.startTime, location: session.location || "", sport: session.sport, matchFormat: session.matchFormat }} /></section>
     <details className="delete-disclosure"><summary>Delete session</summary><div><p className="muted">This permanently removes the session and its roster and matches.</p><DeleteSessionForm action={deleteSession.bind(null, id)} /></div></details>
   </main>;
 }

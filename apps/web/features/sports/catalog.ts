@@ -1,6 +1,6 @@
 export const SPORT_OPTIONS = [
   { code: "PADEL", name: "Padel", icon: "◉", available: true },
-  { code: "TENNIS", name: "Tennis", icon: "◌", available: false },
+  { code: "TENNIS", name: "Tennis", icon: "◌", available: true },
   { code: "BASKETBALL", name: "Basketball", icon: "◎", available: false },
   { code: "FUTSAL", name: "Futsal", icon: "⬡", available: false },
   { code: "BADMINTON", name: "Badminton", icon: "◇", available: false },

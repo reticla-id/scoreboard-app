@@ -10,6 +10,7 @@ import { Roster } from "@/features/players/roster";
 import { GenerateRoundForm } from "@/features/matches/generate-round-form";
 import { PartnerModePanel } from "@/features/partners/partner-mode-panel";
 import { readFixedPairs, readPartnerMode } from "@/features/sports/padel/partner-modes";
+import { readMatchFormat } from "@/features/sports/formats";
 
 export const metadata: Metadata = { title: "Players" };
 
@@ -22,16 +23,21 @@ export default async function PlayersPage({ params }: { params: Promise<{ id: st
     db().round.count({ where: { sessionId: session.id } }),
   ]);
   const partnerMode = readPartnerMode(session.partnerMode);
+  const matchFormat = readMatchFormat(session.matchFormat);
   const fixedPairs = readFixedPairs(session.fixedPairs);
   const fixedConfigurationLocked = partnerMode === "FIXED" && roundCount > 0;
-  const availability = session.sportConfig.rules.padelRoundAvailability(partnerMode, players, fixedPairs, session.sportConfig.rules.minimumPlayers);
+  const availability = session.sportConfig.rules.code === "PADEL"
+    ? session.sportConfig.rules.padelRoundAvailability(partnerMode, players, fixedPairs, session.sportConfig.rules.minimumPlayers)
+    : session.sportConfig.rules.tennisRoundAvailability(matchFormat, partnerMode, players, fixedPairs);
+  const minimumPlayers = session.sportConfig.rules.code === "TENNIS" ? session.sportConfig.rules.tennisMinimumPlayers(matchFormat) : session.sportConfig.rules.minimumPlayers;
+  const usesPartners = matchFormat === "DOUBLES";
   return <main className="site-shell workspace-page">
     <WorkspaceHeader profile={profile} />
     <BackLink href="/home" />
     <SessionWorkspaceHeading session={session} active="players" />
     <div className="session-section-heading"><h2>PLAYERS.</h2></div>
-    <Roster players={players} sessionId={session.id} readOnly={!!session.completedAt || fixedConfigurationLocked} lockReason={fixedConfigurationLocked ? "Reset Matches before changing a fixed-partner roster." : undefined} minimumPlayers={session.sportConfig.rules.minimumPlayers} sportName={session.sportConfig.name} />
-    {players.length > 0 && <PartnerModePanel sessionId={session.id} players={players} mode={partnerMode} pairs={fixedPairs} locked={!!session.completedAt || roundCount > 0} hasRounds={roundCount > 0} completed={!!session.completedAt} />}
+    <Roster players={players} sessionId={session.id} readOnly={!!session.completedAt || fixedConfigurationLocked} lockReason={fixedConfigurationLocked ? "Reset Matches before changing a fixed-partner roster." : undefined} minimumPlayers={minimumPlayers} sportName={`${session.sportConfig.name} ${matchFormat.toLowerCase()}`} />
+    {players.length > 0 && usesPartners && <PartnerModePanel sessionId={session.id} players={players} mode={partnerMode} pairs={fixedPairs} locked={!!session.completedAt || roundCount > 0} hasRounds={roundCount > 0} completed={!!session.completedAt} />}
     <GenerateRoundForm sessionId={session.id} nextNumber={roundCount + 1} availability={availability} locked={!!session.completedAt} />
     <AppFooter />
   </main>;

@@ -14,7 +14,7 @@ export async function getOwnedSession(ownerId: string, id: string) {
 }
 
 const previewSelect = {
-  id: true, name: true, date: true, startTime: true, completedAt: true, location: true, sport: true, partnerMode: true,
+  id: true, name: true, date: true, startTime: true, completedAt: true, location: true, sport: true, matchFormat: true, partnerMode: true,
   _count: { select: { players: { where: { removedAt: null } }, rounds: true, matches: true } },
   matches: { where: { status: "LIVE" }, select: { id: true }, take: 1 },
 } as const;

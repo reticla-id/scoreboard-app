@@ -18,7 +18,7 @@ export async function getPublicSession(token: string, requestedRound?: number, r
     where: { token },
     select: {
       expiresAt: true,
-      session: { select: { id: true, name: true, date: true, startTime: true, location: true, sport: true, partnerMode: true, fixedPairs: true, updatedAt: true } },
+      session: { select: { id: true, name: true, date: true, startTime: true, location: true, sport: true, matchFormat: true, partnerMode: true, fixedPairs: true, updatedAt: true } },
     },
   });
   if (!share || share.expiresAt.getTime() <= Date.now()) return null;
@@ -44,7 +44,7 @@ export async function getPublicSession(token: string, requestedRound?: number, r
     skip: (page - 1) * MATCHES_PER_PAGE,
     take: MATCHES_PER_PAGE,
     select: {
-      id: true, position: true, status: true, scoreA: true, scoreB: true,
+      id: true, position: true, status: true, scoreA: true, scoreB: true, scoreState: true,
       teamA: { select: { playerOne: { select: { id: true, name: true } }, playerTwo: { select: { id: true, name: true } } } },
       teamB: { select: { playerOne: { select: { id: true, name: true } }, playerTwo: { select: { id: true, name: true } } } },
     },

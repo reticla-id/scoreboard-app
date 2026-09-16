@@ -1,8 +1,10 @@
 import { isAvailableSport, sportName } from "./catalog.ts";
 import { padelRules } from "./padel/rules.ts";
+import { tennisRules } from "./tennis/rules.ts";
 
 const rulesBySport = {
   PADEL: padelRules,
+  TENNIS: tennisRules,
 } as const;
 
 export type SportRules = (typeof rulesBySport)[keyof typeof rulesBySport];

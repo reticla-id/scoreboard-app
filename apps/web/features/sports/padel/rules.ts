@@ -9,6 +9,7 @@ import { generatePadelMatches, padelRoundAvailability, plannedPadelMatchCount } 
 export const padelRules = {
   code: "PADEL",
   minimumPlayers: 4,
+  matchFormats: ["DOUBLES"],
   generateRoundMatches,
   plannedRoundMatchCount,
   generatePadelMatches,

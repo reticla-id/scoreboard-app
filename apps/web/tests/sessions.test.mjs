@@ -6,19 +6,19 @@ import { isAvailableSport, sportName } from "../features/sports/catalog.ts";
 import { resolveSportRules } from "../features/sports/sport-registry.ts";
 
 test("a valid padel session keeps its calendar date and trims text", () => {
-  const parsed = sessionSchema.parse({ name: "  Friday Padel  ", date: "2026-09-12", startTime: "19:00", sport: "PADEL", location: "  Court A  " });
+  const parsed = sessionSchema.parse({ name: "  Friday Padel  ", date: "2026-09-12", startTime: "19:00", sport: "PADEL", matchFormat: "DOUBLES", location: "  Court A  " });
   assert.equal(parsed.name, "Friday Padel");
   assert.equal(parsed.location, "Court A");
   assert.equal(dateKey(dateFromInput(parsed.date)), "2026-09-12");
   assert.equal(formatSessionSchedule(dateFromInput(parsed.date), parsed.startTime), "Sat, Sep 12, 2026 · 19:00");
 });
 
-test("invalid calendar dates and other sports are rejected", () => {
+test("invalid calendar dates and unavailable sports are rejected", () => {
   assert.equal(sessionSchema.safeParse({ name: "Game", date: "2026-02-30", startTime: "19:00", sport: "PADEL", location: "" }).success, false);
   assert.equal(sessionSchema.safeParse({ name: "Game", date: "0000-01-01", startTime: "19:00", sport: "PADEL", location: "" }).success, false);
   assert.equal(sessionSchema.safeParse({ name: "Game", date: "2026-09-12", startTime: "24:00", sport: "PADEL", location: "" }).success, false);
   assert.equal(sessionSchema.safeParse({ name: "Game", date: "2026-09-12", startTime: "19:75", sport: "PADEL", location: "" }).success, false);
-  assert.equal(sessionSchema.safeParse({ name: "Game", date: "2026-09-12", startTime: "19:00", sport: "TENNIS", location: "" }).success, false);
+  assert.equal(sessionSchema.safeParse({ name: "Game", date: "2026-09-12", startTime: "19:00", sport: "BASKETBALL", matchFormat: "DOUBLES", location: "" }).success, false);
 });
 
 test("session creation requires the supported sport and edit ignores sport changes", () => {
@@ -28,11 +28,13 @@ test("session creation requires the supported sport and edit ignores sport chang
   form.set("startTime", "08:30");
   assert.equal(sessionInput(form).success, false);
   form.set("sport", "PADEL");
+  form.set("matchFormat", "DOUBLES");
   const parsed = sessionInput(form);
   assert.equal(parsed.success, true);
   if (parsed.success) assert.equal(parsed.data.sport, "PADEL");
   form.set("sport", "TENNIS");
-  assert.equal(sessionInput(form).success, false);
+  form.set("matchFormat", "SINGLES");
+  assert.equal(sessionInput(form).success, true);
   const details = sessionDetailsInput(form);
   assert.equal(details.success, true);
   if (details.success) assert.equal(Object.hasOwn(details.data, "sport"), false);
@@ -47,11 +49,11 @@ test("session lifecycle uses calendar history while explicit finish remains the 
   assert.equal(sessionLifecycle({ ...session, startTime: null }, new Date("2026-09-13T00:00:00Z")), "Active");
 });
 
-test("sport registry routes only Padel to its current rules", () => {
+test("sport registry routes Padel and Tennis to dedicated rules", () => {
   assert.equal(isAvailableSport("PADEL"), true);
-  assert.equal(isAvailableSport("TENNIS"), false);
+  assert.equal(isAvailableSport("TENNIS"), true);
   assert.equal(sportName("PADEL"), "Padel");
-  assert.throws(() => resolveSportRules("TENNIS"), /Unsupported sport/);
+  assert.equal(resolveSportRules("TENNIS").code, "TENNIS");
   const rules = resolveSportRules("PADEL");
   assert.equal(rules.minimumPlayers, 4);
   assert.deepEqual(rules.eventTypes, ["W", "FE", "UE", "DF"]);

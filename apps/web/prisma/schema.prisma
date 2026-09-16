@@ -28,6 +28,7 @@ model Session {
   startTime String?  @map("start_time") @db.VarChar(5)
   completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
   sport     String   @db.VarChar(16)
+  matchFormat String @default("DOUBLES") @map("match_format") @db.VarChar(16)
   partnerMode String @default("RANDOM") @map("partner_mode") @db.VarChar(16)
   fixedPairs Json @default("[]") @map("fixed_pairs")
   location  String?  @db.VarChar(120)
@@ -78,8 +79,8 @@ model Team {
   session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   playerOneId String   @map("player_one_id") @db.Uuid
   playerOne   Player   @relation("TeamPlayerOne", fields: [sessionId, playerOneId], references: [sessionId, id], onDelete: Cascade)
-  playerTwoId String   @map("player_two_id") @db.Uuid
-  playerTwo   Player   @relation("TeamPlayerTwo", fields: [sessionId, playerTwoId], references: [sessionId, id], onDelete: Cascade)
+  playerTwoId String?  @map("player_two_id") @db.Uuid
+  playerTwo   Player?  @relation("TeamPlayerTwo", fields: [sessionId, playerTwoId], references: [sessionId, id], onDelete: Cascade)
   matchesAsA  Match[]  @relation("MatchTeamA")
   matchesAsB  Match[]  @relation("MatchTeamB")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -103,6 +104,7 @@ model Match {
   status    String   @default("UPCOMING") @db.VarChar(16)
   scoreA    Int?     @map("score_a")
   scoreB    Int?     @map("score_b")
+  scoreState Json?   @map("score_state")
   events    MatchEvent[]
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)

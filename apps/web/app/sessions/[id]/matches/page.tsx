@@ -7,6 +7,8 @@ import { requireWorkspace } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getOwnedSession } from "@/features/sessions/data";
 import { MatchWorkspace, type RoundView } from "@/features/matches/match-workspace";
+import { TennisMatchWorkspace, type TennisRoundView } from "@/features/matches/tennis-match-workspace";
+import { calculateTennisScore, readTennisPointHistory } from "@/features/sports/tennis/scoring";
 
 export const metadata: Metadata = { title: "Matches" };
 
@@ -35,12 +37,17 @@ export default async function MatchesPage({ params, searchParams }: { params: Pr
     _count: { _all: true },
   }) : [];
   const names = new Map(players.map((player) => [player.id, player.name]));
-  const current: RoundView | null = selected ? { id: selected.id, number: selected.number, matchCount: selected._count.matches, waiting: selected.waitingPlayerIds.map((playerId) => names.get(playerId) ?? "Former player"), matches: matches.map((match) => ({ id: match.id, updatedAt: match.updatedAt.toISOString(), position: match.position, status: match.status, scoreA: match.scoreA, scoreB: match.scoreB, teamA: [{ id: match.teamA.playerOne.id, name: match.teamA.playerOne.name }, { id: match.teamA.playerTwo.id, name: match.teamA.playerTwo.name }], teamB: [{ id: match.teamB.playerOne.id, name: match.teamB.playerOne.name }, { id: match.teamB.playerTwo.id, name: match.teamB.playerTwo.name }], eventCounts: eventCounts.filter((entry) => entry.matchId === match.id).map((entry) => ({ playerId: entry.playerId, type: entry.type, count: entry._count._all })) })) } : null;
+  const summaries = rounds.map((round) => ({ id: round.id, number: round.number, matchCount: round._count.matches }));
+  const current: RoundView | null = selected && session.sport === "PADEL" ? { id: selected.id, number: selected.number, matchCount: selected._count.matches, waiting: selected.waitingPlayerIds.map((playerId) => names.get(playerId) ?? "Former player"), matches: matches.map((match) => {
+    if (!match.teamA.playerTwo || !match.teamB.playerTwo) throw new Error("A Padel match requires two players per team.");
+    return { id: match.id, updatedAt: match.updatedAt.toISOString(), position: match.position, status: match.status, scoreA: match.scoreA, scoreB: match.scoreB, teamA: [{ id: match.teamA.playerOne.id, name: match.teamA.playerOne.name }, { id: match.teamA.playerTwo.id, name: match.teamA.playerTwo.name }], teamB: [{ id: match.teamB.playerOne.id, name: match.teamB.playerOne.name }, { id: match.teamB.playerTwo.id, name: match.teamB.playerTwo.name }], eventCounts: eventCounts.filter((entry) => entry.matchId === match.id).map((entry) => ({ playerId: entry.playerId, type: entry.type, count: entry._count._all })) };
+  }) } : null;
+  const tennisCurrent: TennisRoundView | null = selected && session.sport === "TENNIS" ? { id: selected.id, number: selected.number, matchCount: selected._count.matches, matches: matches.map((match) => ({ id: match.id, updatedAt: match.updatedAt.toISOString(), position: match.position, status: match.status, teamA: [{ id: match.teamA.playerOne.id, name: match.teamA.playerOne.name }, ...(match.teamA.playerTwo ? [{ id: match.teamA.playerTwo.id, name: match.teamA.playerTwo.name }] : [])], teamB: [{ id: match.teamB.playerOne.id, name: match.teamB.playerOne.name }, ...(match.teamB.playerTwo ? [{ id: match.teamB.playerTwo.id, name: match.teamB.playerTwo.name }] : [])], score: calculateTennisScore(readTennisPointHistory(match.scoreState)) })) } : null;
   return <main className="site-shell workspace-page">
     <WorkspaceHeader profile={profile} />
     <BackLink href="/home" />
     <SessionWorkspaceHeading session={session} active="matches" />
-    <MatchWorkspace sessionId={session.id} rounds={rounds.map((round) => ({ id: round.id, number: round.number, matchCount: round._count.matches }))} current={current} page={page} pages={pages} completed={!!session.completedAt} minimumPlayers={session.sportConfig.rules.minimumPlayers} eventGlossary={session.sportConfig.rules.eventGlossary} />
+    {session.sport === "TENNIS" ? <TennisMatchWorkspace sessionId={session.id} rounds={summaries} current={tennisCurrent} page={page} pages={pages} completed={!!session.completedAt} /> : <MatchWorkspace sessionId={session.id} rounds={summaries} current={current} page={page} pages={pages} completed={!!session.completedAt} minimumPlayers={session.sportConfig.rules.minimumPlayers} eventGlossary={session.sportConfig.rules.eventGlossary} />}
     <AppFooter />
   </main>;
 }

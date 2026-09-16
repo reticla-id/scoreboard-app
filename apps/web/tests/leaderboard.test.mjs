@@ -65,6 +65,15 @@ test("score corrections change standings on the next calculation", () => {
   assert.deepEqual(after.slice(0, 2).map((row) => row.id), ["C", "D"]);
 });
 
+test("tennis standings use the recorded winner even when shortened game totals are tied", () => {
+  const rows = calculateLeaderboard(players.slice(0, 2), [
+    { ...match(["A"], ["B"], 3, 3), winner: "A" },
+  ]);
+  assert.equal(rows.find((row) => row.id === "A").wins, 1);
+  assert.equal(rows.find((row) => row.id === "B").losses, 1);
+  assert.equal(rows.find((row) => row.id === "A").difference, 0);
+});
+
 test("Player Stats alone ranks by Net Score and Efficiency, ignoring FE", () => {
   const stats = calculatePlayerStats(players.slice(0, 4), [
     ...counts("A", 15, 2, 1, 0), ...counts("B", 10, 400, 4, 2),

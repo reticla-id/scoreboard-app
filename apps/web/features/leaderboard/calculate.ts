@@ -6,8 +6,9 @@ export type ResultMatch = {
   status: string;
   scoreA: number | null;
   scoreB: number | null;
-  teamA: [string, string];
-  teamB: [string, string];
+  teamA: string[];
+  teamB: string[];
+  winner?: "A" | "B" | null;
 };
 export type LeaderboardRow = {
   id: string;
@@ -51,16 +52,17 @@ export function calculateLeaderboard(players: readonly LeaderboardPlayer[], matc
     for (const player of players) add(player.id, player.name);
   }
   for (const match of matches) {
-    if (match.status !== "FINISHED" || match.scoreA === null || match.scoreB === null || match.scoreA === match.scoreB) continue;
+    if (match.status !== "FINISHED" || match.scoreA === null || match.scoreB === null || (!match.winner && match.scoreA === match.scoreB)) continue;
     for (const [team, scored, conceded] of [[match.teamA, match.scoreA, match.scoreB], [match.teamB, match.scoreB, match.scoreA]] as const) {
-      const id = mode === "FIXED" ? pairKey(team[0], team[1]) : "";
-      if (mode === "FIXED") add(id, pairName(team[0], team[1]));
+      const id = mode === "FIXED" && team.length === 2 ? pairKey(team[0], team[1]) : "";
+      if (mode === "FIXED" && team.length === 2) add(id, pairName(team[0], team[1]));
       for (const playerId of mode === "FIXED" ? [id] : team) {
         const row = rows.get(playerId);
         if (!row) continue;
         row.matchesPlayed++;
-        row.wins += Number(scored > conceded);
-        row.losses += Number(scored < conceded);
+        const won = match.winner ? (team === match.teamA ? match.winner === "A" : match.winner === "B") : scored > conceded;
+        row.wins += Number(won);
+        row.losses += Number(!won);
         row.gamesWon += scored;
         row.gamesLost += conceded;
       }
@@ -83,8 +85,8 @@ export function calculateLeaderboard(players: readonly LeaderboardPlayer[], matc
 export function calculatePlayerRanking(stats: readonly PlayerStatRow[], matches: readonly ResultMatch[]): PlayerRankingRow[] {
   const wins = new Map(stats.map((row) => [row.id, 0]));
   for (const match of matches) {
-    if (match.status !== "FINISHED" || match.scoreA === null || match.scoreB === null || match.scoreA === match.scoreB) continue;
-    const winners = match.scoreA > match.scoreB ? match.teamA : match.teamB;
+    if (match.status !== "FINISHED" || match.scoreA === null || match.scoreB === null || (!match.winner && match.scoreA === match.scoreB)) continue;
+    const winners = match.winner ? (match.winner === "A" ? match.teamA : match.teamB) : match.scoreA > match.scoreB ? match.teamA : match.teamB;
     for (const playerId of winners) {
       if (wins.has(playerId)) wins.set(playerId, (wins.get(playerId) ?? 0) + 1);
     }

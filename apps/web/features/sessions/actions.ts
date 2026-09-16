@@ -21,6 +21,7 @@ export async function createSession(_state: SessionFormState, formData: FormData
       date: dateFromInput(parsed.data.date),
       startTime: parsed.data.startTime,
       sport: parsed.data.sport,
+      matchFormat: parsed.data.matchFormat,
       location: parsed.data.location || null,
     },
   });

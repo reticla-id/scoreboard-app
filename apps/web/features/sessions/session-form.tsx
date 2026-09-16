@@ -8,6 +8,7 @@ import type { SessionFormState } from "@/features/sessions/actions";
 import { todayKey } from "@/features/sessions/dates";
 import { SportSelector } from "@/features/sessions/sport-selector";
 import { isAvailableSport, sportName, type AvailableSportCode } from "@/features/sports/catalog";
+import { matchFormatName, type MatchFormat } from "@/features/sports/formats";
 
 type Action = (state: SessionFormState, formData: FormData) => Promise<SessionFormState>;
 
@@ -16,10 +17,11 @@ function SubmitButton({ mode }: { mode: "create" | "edit" }) {
   return <button className="button" disabled={pending} type="submit">{pending ? "Saving…" : mode === "create" ? "Host Session" : "Save changes"}<ArrowUpRightIcon /></button>;
 }
 
-export function SessionForm({ action, mode, values }: { action: Action; mode: "create" | "edit"; values?: { name: string; date: string; startTime: string | null; location: string; sport: string } }) {
+export function SessionForm({ action, mode, values }: { action: Action; mode: "create" | "edit"; values?: { name: string; date: string; startTime: string | null; location: string; sport: string; matchFormat: string } }) {
   const [state, formAction] = useActionState<SessionFormState, FormData>(action, {});
   const [date, setDate] = useState(values?.date ?? todayKey());
   const [sport, setSport] = useState<AvailableSportCode | null>(null);
+  const [matchFormat, setMatchFormat] = useState<MatchFormat>("DOUBLES");
   const [clientError, setClientError] = useState("");
   useEffect(() => {
     if (mode !== "create") return;
@@ -29,11 +31,13 @@ export function SessionForm({ action, mode, values }: { action: Action; mode: "c
     return () => cancelAnimationFrame(frame);
   }, [mode]);
   return <div className="session-form stack">
-    {mode === "create" && <SportSelector value={sport} onSelect={(value) => { setSport(value); setClientError(""); }} />}
+    {mode === "create" && <SportSelector value={sport} onSelect={(value) => { setSport(value); setMatchFormat(value === "TENNIS" ? "SINGLES" : "DOUBLES"); setClientError(""); }} />}
     {mode === "create" && !sport ? <p className="muted sport-select-hint">Select a sport to set up your session.</p> : <form action={formAction} className="session-form stack" onSubmit={(event) => { if (mode === "create" && !isAvailableSport(sport)) { event.preventDefault(); setClientError("Select a sport before creating the session."); } }}>
     {mode === "create" && <input type="hidden" name="sport" value={sport ?? ""} />}
+    {mode === "create" && <input type="hidden" name="matchFormat" value={matchFormat} />}
+    {mode === "create" && sport === "TENNIS" && <fieldset className="match-format-field"><legend>Match type</legend><div className="match-format-switch">{(["SINGLES", "DOUBLES"] as const).map((format) => <button key={format} type="button" aria-pressed={matchFormat === format} onClick={() => setMatchFormat(format)}><strong>{matchFormatName(format)}</strong><small>{format === "SINGLES" ? "One player per side" : "Two players per side"}</small></button>)}</div></fieldset>}
     <div className="session-form-field"><label htmlFor="session-name">Session Name</label><input id="session-name" name="name" type="text" required maxLength={120} autoFocus placeholder="Friday night padel" defaultValue={values?.name} /></div>
-    {mode === "edit" && <div className="session-form-field"><span className="session-field-label">Sport</span><div className="fixed-sport" aria-label={`Sport: ${sportName(values?.sport ?? "")}, locked after creation`}>{sportName(values?.sport ?? "")} <span>LOCKED</span></div></div>}
+    {mode === "edit" && <div className="session-form-grid"><div className="session-form-field"><span className="session-field-label">Sport</span><div className="fixed-sport" aria-label={`Sport: ${sportName(values?.sport ?? "")}, locked after creation`}>{sportName(values?.sport ?? "")} <span>LOCKED</span></div></div><div className="session-form-field"><span className="session-field-label">Match type</span><div className="fixed-sport">{matchFormatName(values?.matchFormat === "SINGLES" ? "SINGLES" : "DOUBLES")} <span>LOCKED</span></div></div></div>}
     <div className="session-form-grid"><div className="session-form-field"><span className="session-field-label">Date</span><CalendarDatePicker value={date} onChange={setDate} name="date" /></div>
     <div className="session-form-field"><label htmlFor="session-time">Time</label><input id="session-time" name="startTime" type="time" required defaultValue={values?.startTime ?? (mode === "create" ? "19:00" : "")} /></div></div>
     <details className="optional-detail" open={!!values?.location}><summary>+ Add location <span>optional</span></summary><div className="session-form-field"><label className="sr-only" htmlFor="session-location">Location</label><input id="session-location" name="location" type="text" maxLength={120} placeholder="Court or venue" defaultValue={values?.location} /></div></details>
