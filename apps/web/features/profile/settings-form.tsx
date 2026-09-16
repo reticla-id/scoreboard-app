@@ -6,13 +6,17 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { MAX_AVATAR_BYTES } from "@/features/profile/avatar";
 import { updateSettings } from "@/features/profile/settings-actions";
 
-function SaveButton({ pending }: { pending: boolean }) {
-  return <button className="button" type="submit" disabled={pending}>{pending ? "Saving…" : "Save changes"}</button>;
+function SaveButton({ pending, changed }: { pending: boolean; changed: boolean }) {
+  return <button className="button" type="submit" disabled={pending || !changed}>{pending ? "Saving…" : "Save changes"}</button>;
 }
 
 export function SettingsForm({ displayName, username, email, avatarSrc }: { displayName: string; username: string; email: string; avatarSrc: string | null }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ error?: string; success?: string }>({});
+  const [displayNameValue, setDisplayNameValue] = useState(displayName);
+  const [usernameValue, setUsernameValue] = useState(username);
+  const [savedDisplayName, setSavedDisplayName] = useState(displayName);
+  const [savedUsername, setSavedUsername] = useState(username);
   const [preview, setPreview] = useState<string | null>(null);
   const [savedAvatar, setSavedAvatar] = useState(avatarSrc);
   const [removeAvatar, setRemoveAvatar] = useState(false);
@@ -23,9 +27,10 @@ export function SettingsForm({ displayName, username, email, avatarSrc }: { disp
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
 
   const shownAvatar = removeAvatar ? null : preview ?? savedAvatar;
+  const changed = displayNameValue !== savedDisplayName || usernameValue !== savedUsername || preview !== null || removeAvatar;
   return <form className="settings-form form-stack" aria-label="Profile settings" onChange={() => setMessage({})} onSubmit={(event) => {
     event.preventDefault();
-    if (pending) return;
+    if (pending || !changed) return;
     const data = new FormData(event.currentTarget);
     setMessage({});
     startTransition(async () => {
@@ -33,6 +38,12 @@ export function SettingsForm({ displayName, username, email, avatarSrc }: { disp
         const result = await updateSettings({}, data);
         if (result.error) { setMessage({ error: result.error }); return; }
         setSavedAvatar(result.avatarSrc ?? null);
+        const nextDisplayName = displayNameValue.trim();
+        const nextUsername = usernameValue.trim().toLowerCase();
+        setDisplayNameValue(nextDisplayName);
+        setUsernameValue(nextUsername);
+        setSavedDisplayName(nextDisplayName);
+        setSavedUsername(nextUsername);
         setRemoveAvatar(false);
         setPreview(null);
         setFileError(null);
@@ -58,11 +69,11 @@ export function SettingsForm({ displayName, username, email, avatarSrc }: { disp
       }} />
       <input type="hidden" name="removeAvatar" value={removeAvatar ? "true" : "false"} />
     </div>
-    <div className="settings-fields"><div><label htmlFor="settings-display-name">Display name</label><input id="settings-display-name" name="displayName" type="text" autoComplete="name" required maxLength={80} defaultValue={displayName} /></div>
+    <div className="settings-fields"><div><label htmlFor="settings-display-name">Display name</label><input id="settings-display-name" name="displayName" type="text" autoComplete="name" required maxLength={80} value={displayNameValue} onChange={(event) => setDisplayNameValue(event.target.value)} /></div>
       <div><label htmlFor="settings-email">Email</label><input className="settings-readonly" id="settings-email" type="email" value={email} readOnly aria-readonly="true" /></div>
-      <div><label htmlFor="settings-username">Username</label><div className="input-prefix"><span aria-hidden="true">@</span><input id="settings-username" name="username" type="text" autoComplete="username" required minLength={3} maxLength={30} pattern="[A-Za-z0-9_]+" defaultValue={username} /></div><p className="field-hint">3–30 letters, numbers, or underscores.</p></div></div>
+      <div><label htmlFor="settings-username">Username</label><div className="input-prefix"><span aria-hidden="true">@</span><input id="settings-username" name="username" type="text" autoComplete="username" required minLength={3} maxLength={30} pattern="[A-Za-z0-9_]+" value={usernameValue} onChange={(event) => setUsernameValue(event.target.value)} /></div><p className="field-hint">3–30 letters, numbers, or underscores.</p></div></div>
     {(fileError || message.error) && <p className="message error" role="alert">{fileError ?? message.error}</p>}
     {message.success && !fileError && <p className="settings-save-status" role="status">{message.success}</p>}
-    <div className="settings-save-row"><SaveButton pending={pending} /></div>
+    <div className="settings-save-row"><SaveButton pending={pending} changed={changed} /></div>
   </form>;
 }

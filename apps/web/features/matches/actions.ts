@@ -60,7 +60,7 @@ export async function generateRound(sessionId: string, _state: GenerateState, _f
   }, { maxWait: 10_000, timeout: 120_000 });
   if ("error" in result) return result;
   refreshSession(sessionId);
-  redirect(`/sessions/${sessionId}/matches#round-${result.number}`);
+  redirect(`/sessions/${sessionId}/matches?round=${result.number}`);
 }
 
 export async function resetMatches(sessionId: string, _state: GenerateState, formData: FormData): Promise<GenerateState> {
@@ -70,11 +70,14 @@ export async function resetMatches(sessionId: string, _state: GenerateState, for
   const result = await db().$transaction(async (tx) => {
     const locked = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM public.sessions WHERE id = ${sessionId}::uuid AND owner_id = ${ownerId}::uuid AND completed_at IS NULL FOR UPDATE`;
     if (!locked.length) return { error: "This session is finished. Rounds are read only." };
+    const share = await tx.sessionShare.findUnique({ where: { sessionId }, select: { token: true } });
+    await tx.sessionShare.deleteMany({ where: { sessionId } });
     await tx.round.deleteMany({ where: { sessionId } }); // Matches and future match-owned results cascade.
     await tx.team.deleteMany({ where: { sessionId } });
-    return {};
+    return { shareToken: share?.token };
   }, { maxWait: 10_000, timeout: 120_000 });
   if (result.error) return result;
+  if (result.shareToken) revalidatePath(`/live/${result.shareToken}`);
   refreshSession(sessionId);
   redirect(`/sessions/${sessionId}/players`);
 }

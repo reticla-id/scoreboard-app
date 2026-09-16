@@ -4,8 +4,10 @@ import { redirectAuthenticatedUser } from "@/lib/auth";
 import { ArrowUpRightIcon } from "@/components/action-icons";
 import { AppFooter } from "@/components/app-footer";
 
-export default async function Landing() {
-  await redirectAuthenticatedUser();
+export default async function Landing({ searchParams }: { searchParams: Promise<{ source?: string | string[] }> }) {
+  const query = await searchParams;
+  const source = Array.isArray(query.source) ? query.source[0] : query.source;
+  if (source !== "live-session") await redirectAuthenticatedUser();
   return <main className="site-shell">
     <header className="site-header landing-header"><Brand /><nav aria-label="Main navigation"><Link className="text-link" href="/sign-in">Sign in</Link><Link className="button button-small" href="/sign-up">Get started</Link></nav></header>
     <section className="landing-hero">

@@ -49,7 +49,7 @@ export function PartnerModePanel({ sessionId, players, mode, pairs, locked, hasR
       <button type="button" aria-pressed={mode === "RANDOM"} disabled={locked || pending} onClick={() => changeMode("RANDOM")}><strong>Random Partners</strong><small>Different teammates across matches</small></button>
       <button type="button" aria-pressed={mode === "FIXED"} disabled={locked || pending} onClick={() => changeMode("FIXED")}><strong>Fixed Partners</strong><small>Keep your partner every match</small></button>
     </div>
-    {locked && <p className="muted partner-mode-note">{completed ? "This session is finished. Partner setup is read only." : hasRounds ? <>Reset Matches before changing partner mode or assignments. Existing matches stay intact. <Link href={`/sessions/${sessionId}/matches`}>Open Matches →</Link></> : null}</p>}
+    {locked && <p className="muted partner-mode-note">{completed ? "Partner setup is locked." : hasRounds ? <>Reset Matches before changing partner mode or assignments. Existing matches stay intact. <Link href={`/sessions/${sessionId}/matches`}>Open Matches →</Link></> : null}</p>}
     {mode === "FIXED" && <div className="fixed-pair-area">
       <div className="fixed-pair-count"><strong>{pairs.length} PAIR{pairs.length === 1 ? "" : "S"}</strong><span>{unpaired.length} unpaired</span></div>
       {pairs.length > 0 && <ul className="fixed-pair-list">{pairs.map((pair) => <li key={`${pair.firstId}:${pair.secondId}`}><span>{names.get(pair.firstId) ?? "Former player"} <b>+</b> {names.get(pair.secondId) ?? "Former player"}</span>{!locked && <button type="button" disabled={pending} onClick={() => changePair(pair.firstId, null)}>Unpair</button>}</li>)}</ul>}

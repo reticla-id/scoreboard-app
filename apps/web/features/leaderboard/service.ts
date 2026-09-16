@@ -5,9 +5,10 @@ import type { ResultMatch } from "./calculate";
 import { readFixedPairs, readPartnerMode } from "@/features/sports/padel/partner-modes";
 
 type OwnedSession = Awaited<ReturnType<typeof getOwnedSession>>;
+type LeaderboardSession = Pick<OwnedSession, "id" | "sportConfig" | "partnerMode" | "fixedPairs">;
 
 /** Called only by the authorized results page, never by match mutations. */
-export async function calculateSessionLeaderboard(session: OwnedSession) {
+export async function calculateSessionLeaderboard(session: LeaderboardSession) {
   const sessionId = session.id;
   const [players, finishedMatches, eventCounts] = await Promise.all([
     db().player.findMany({ where: { sessionId }, select: { id: true, name: true, removedAt: true } }),

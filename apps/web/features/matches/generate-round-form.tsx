@@ -25,6 +25,6 @@ export function GenerateRoundForm({ sessionId, nextNumber, availability, locked 
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [enabled]);
-  const description = locked ? "This session is finished. Its rounds are read only." : availability.message;
+  const description = locked ? "You no longer can edit finished session." : availability.message;
   return <section className={`generate-round-dock ${locked ? "generate-round-dock-locked" : ""}`} aria-label="Next step"><div><span className="panel-index">{locked ? "SESSION FINISHED" : enabled ? "ROSTER READY" : "PREPARE ROSTER"}</span><p>{description}</p></div>{!locked && <form ref={formRef} action={action}><GenerateButton number={nextNumber} enabled={enabled} /></form>}{state.error && <p className="message error" role="alert">{state.error}</p>}</section>;
 }

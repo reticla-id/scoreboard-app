@@ -7,6 +7,7 @@ import { advanceMatch, changeScore, recordMatchEvent, resetScore, saveFinishedSc
 import { EVENT_TYPES, changeDisplayedScore, projectScore, type EventType, type Score, type ScoreOperation, type TeamSide } from "./scoring";
 import { ResetMatchesForm } from "./reset-matches-form";
 import { ArrowRightIcon, ArrowUpRightIcon } from "@/components/action-icons";
+import { RoundSelector } from "./round-selector";
 
 type MatchPlayer = { id: string; name: string };
 type EventCount = { playerId: string; type: string; count: number };
@@ -183,13 +184,12 @@ function MatchLine({ match, sessionId, onGlossary, eventGlossary }: { match: Mat
 
 export function MatchWorkspace({ sessionId, rounds, current, page, pages, minimumPlayers, eventGlossary, completed = false }: { sessionId: string; rounds: RoundSummary[]; current: RoundView | null; page: number; pages: number; minimumPlayers: number; eventGlossary: EventGlossary; completed?: boolean }) {
   const glossaryRef = useRef<HTMLDialogElement>(null);
-  const total = rounds.reduce((count, round) => count + round.matchCount, 0);
-  const heading = <div className="games-heading"><div><h2>MATCHES.</h2>{current && <p className="muted">{rounds.length} round{rounds.length === 1 ? "" : "s"} · {total.toLocaleString("en-US")} games</p>}</div>{!completed && current && <Link className="text-link" href={`/sessions/${sessionId}/players`}>Players / generate another round <ArrowRightIcon /></Link>}</div>;
+  const heading = <div className="games-heading"><div><h2>MATCHES.</h2></div>{!completed && current && <Link className="text-link" href={`/sessions/${sessionId}/players`}>Players / generate another round <ArrowRightIcon /></Link>}</div>;
   if (!current) return <div className="games-workspace">{heading}<section className="games-empty"><h3>{completed ? "NO MATCHES RECORDED." : <>PLAYERS FIRST.<br />GAMES NEXT.</>}</h3><p className="muted">{completed ? "This session is finished. Its schedule is locked." : `Save at least ${minimumPlayers} players, then generate a doubles round from Players.`}</p><Link className="button" href={`/sessions/${sessionId}/players`}>View players <ArrowUpRightIcon /></Link></section></div>;
   const base = `/sessions/${sessionId}/matches?round=${current.number}`;
   return <div className="games-workspace">{heading}
-    {rounds.length > 1 && <nav className="round-switch" aria-label="Rounds">{rounds.map((round) => <Link key={round.id} href={`/sessions/${sessionId}/matches?round=${round.number}`} aria-current={round.id === current.id ? "page" : undefined}>Round {round.number}<span>{round.matchCount.toLocaleString("en-US")}</span></Link>)}</nav>}
-    <section className="round-section" id={`round-${current.number}`} aria-labelledby="current-round-heading"><div className="round-heading"><h3 id="current-round-heading">ROUND {current.number}</h3><p>{current.matchCount.toLocaleString("en-US")} MATCH{current.matchCount === 1 ? "" : "ES"}</p></div>
+    <RoundSelector rounds={rounds} selected={current} basePath={`/sessions/${sessionId}/matches`} />
+    <section className="round-section" id={`round-${current.number}`} aria-label={`Round ${current.number} matches`}>
       <div className="game-list">{current.matches.map((match) => <MatchLine key={`${match.id}:${match.updatedAt}`} match={match} sessionId={sessionId} eventGlossary={eventGlossary} onGlossary={() => glossaryRef.current?.showModal()} />)}</div>
       {pages > 1 && <nav className="game-pagination" aria-label="Match pages"><span>Showing {(page - 1) * 50 + 1}–{Math.min(page * 50, current.matchCount)} of {current.matchCount.toLocaleString("en-US")}</span><div>{page > 1 && <Link className="button button-secondary button-small" href={`${base}&page=${page - 1}`}>Previous</Link>}{page < pages && <Link className="button button-secondary button-small" href={`${base}&page=${page + 1}`}>Next</Link>}</div></nav>}
       {current.waiting.length > 0 && <div className="round-waiting"><strong>WAITING THIS ROUND</strong><span>{current.waiting.join(" · ")}</span></div>}

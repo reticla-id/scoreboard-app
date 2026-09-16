@@ -14,7 +14,7 @@ function efficiency(value: number | null) { return value === null ? "—" : `${v
 function outcomes(row: PlayerRankingRow) { return `${row.winners} / ${row.forcedErrors} / ${row.unforcedErrors} / ${row.doubleFaults}`; }
 function Rank({ index }: { index: number }) { return index === 0 ? <span className="leader-marker">#1</span> : <>{String(index + 1).padStart(2, "0")}</>; }
 
-export function ResultsView({ sessionId, standings, playerRanking, partnerMode, scoredMatches, trackedEvents, eventGlossary }: {
+export function ResultsView({ sessionId, standings, playerRanking, partnerMode, scoredMatches, trackedEvents, eventGlossary, publicView = false }: {
   sessionId: string;
   standings: LeaderboardRow[];
   playerRanking: PlayerRankingRow[];
@@ -22,6 +22,7 @@ export function ResultsView({ sessionId, standings, playerRanking, partnerMode, 
   scoredMatches: number;
   trackedEvents: number;
   eventGlossary: readonly { code: EventType; name: string; description: string }[];
+  publicView?: boolean;
 }) {
   const router = useRouter();
   const [refreshing, startRefresh] = useTransition();
@@ -34,14 +35,14 @@ export function ResultsView({ sessionId, standings, playerRanking, partnerMode, 
       <button type="button" aria-pressed={view === "stats"} onClick={() => setView("stats")}>Player Stats</button>
     </div>
     <div className="results-heading-line"><div className="standings-heading"><span className="panel-index">SESSION RESULTS</span><h2 id="results-heading">{view === "leaderboard" ? "LEADERBOARD." : "PLAYER STATS."}</h2><p className="muted">{view === "leaderboard" ? `${scoredMatches} finished match${scoredMatches === 1 ? "" : "es"} · ${fixed ? "fixed partners" : "individual players"} · ranked by win rate` : `${trackedEvents} recorded outcome${trackedEvents === 1 ? "" : "s"} · individual player ranking`}</p></div></div>
-    {view === "leaderboard" && (scoredMatches === 0 ? <><div className="results-actions">{refresh}</div><div className="standings-empty"><h3>NO RESULTS YET.</h3><p className="muted">Finish a scored match to start the leaderboard.</p><Link className="button" href={`/sessions/${sessionId}/matches`}>Go to matches <ArrowUpRightIcon /></Link></div></> : <>
-      <div className="results-actions">{refresh}<TableExportActions type="leaderboard" rows={standings} partnerMode={partnerMode} /></div>
+    {view === "leaderboard" && (scoredMatches === 0 ? <>{!publicView && <div className="results-actions">{refresh}</div>}<div className="standings-empty"><h3>NO RESULTS YET.</h3><p className="muted">Finish a scored match to start the leaderboard.</p>{!publicView && <Link className="button" href={`/sessions/${sessionId}/matches`}>Go to matches <ArrowUpRightIcon /></Link>}</div></> : <>
+      <div className="results-actions">{!publicView && refresh}<TableExportActions type="leaderboard" rows={standings} partnerMode={partnerMode} /></div>
       <table className="results-table match-standings-table"><caption className="sr-only">{fixed ? "Fixed partner" : "Player"} standings ranked by win rate</caption><colgroup><col className="rank-col" /><col className="player-col" /><col className="wins-col" /><col className="losses-col" /><col className="diff-col" /><col className="rate-col" /></colgroup><thead><tr><th scope="col">Rank</th><th scope="col">{fixed ? "Partners" : "Player"}</th><th scope="col"><abbr title="Wins">W</abbr></th><th scope="col"><abbr title="Losses">L</abbr></th><th scope="col">Diff</th><th scope="col">Win %</th></tr></thead><tbody>{standings.map((row, index) => <tr key={row.id} className={index === 0 ? "leader-row" : undefined}><td className="results-rank"><Rank index={index} /></td><th scope="row" className="results-name">{row.name}</th><td>{row.wins}</td><td>{row.losses}</td><td>{signed(row.difference)}</td><td className="results-rate">{row.winPercent.toFixed(1)}%</td></tr>)}</tbody></table>
       <ol className="rankings-mobile" aria-label={fixed ? "Fixed partner standings" : "Player standings"}>{standings.map((row, index) => <li key={row.id} className={index === 0 ? "leader-row" : undefined}><span className="results-rank"><Rank index={index} /></span><strong className="results-name">{row.name}</strong><strong className="results-net">{row.winPercent.toFixed(1)}%</strong><span className="results-secondary">{row.wins} W · {row.losses} L</span><span className="results-events"><small>DIFF / PLAYED</small><b>{signed(row.difference)} / {row.matchesPlayed}</b></span></li>)}</ol>
       <p className="muted standings-note">Win rate ranks first so fewer matches do not automatically lower a {fixed ? "pair’s" : "player’s"} position. Average game difference breaks ties.</p>
     </>)}
-    {view === "stats" && (trackedEvents === 0 ? <><div className="results-actions">{refresh}</div><div className="standings-empty"><h3>NO POINTS TRACKED.</h3><p className="muted">Open Advanced Tracking on a live match, then finish it to see player outcomes here.</p><Link className="button" href={`/sessions/${sessionId}/matches`}>Go to matches <ArrowUpRightIcon /></Link></div></> : <>
-      <div className="results-actions">{refresh}<TableExportActions type="stats" rows={playerRanking} /></div>
+    {view === "stats" && (trackedEvents === 0 ? <>{!publicView && <div className="results-actions">{refresh}</div>}<div className="standings-empty"><h3>NO POINTS TRACKED.</h3><p className="muted">Open Advanced Tracking on a live match, then finish it to see player outcomes here.</p>{!publicView && <Link className="button" href={`/sessions/${sessionId}/matches`}>Go to matches <ArrowUpRightIcon /></Link>}</div></> : <>
+      {!publicView && <div className="results-actions">{refresh}<TableExportActions type="stats" rows={playerRanking} /></div>}
       <table className="results-table rankings-table"><caption className="sr-only">Individual player ranking by net score and efficiency</caption><colgroup><col className="rank-col" /><col className="player-col" /><col className="net-col" /><col className="eff-col" /><col className="events-col" /></colgroup><thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col">Net Score</th><th scope="col">Efficiency</th><th scope="col">W / FE / UE / DF</th></tr></thead><tbody>{playerRanking.map((row, index) => <tr key={row.id} className={index === 0 ? "leader-row" : undefined}><td className="results-rank"><Rank index={index} /></td><th scope="row" className="results-name">{row.name}</th><td className="results-net">{signed(row.netScore)}</td><td>{efficiency(row.efficiency)}</td><td className="results-events">{outcomes(row)}</td></tr>)}</tbody></table>
       <ol className="rankings-mobile" aria-label="Individual player statistics ranking">{playerRanking.map((row, index) => <li key={row.id} className={index === 0 ? "leader-row" : undefined}><span className="results-rank"><Rank index={index} /></span><strong className="results-name">{row.name}</strong><strong className="results-net">{signed(row.netScore)}</strong><span className="results-secondary">{efficiency(row.efficiency)} <small>efficiency</small></span><span className="results-events"><small>W / FE / UE / DF</small><b>{outcomes(row)}</b></span></li>)}</ol>
     </>)}

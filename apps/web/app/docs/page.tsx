@@ -17,6 +17,7 @@ const sections = [
   ["entering-scores", "Entering Scores"],
   ["advanced-scoring", "Advanced Scoring"],
   ["leaderboards", "Leaderboards"],
+  ["live-session", "Live Session"],
   ["sharing-results", "Sharing Results"],
   ["finishing-a-session", "Finishing a Session"],
   ["frequently-asked-questions", "Frequently Asked Questions"],
@@ -56,6 +57,8 @@ export default async function DocsPage() {
         <section id="advanced-scoring"><h2>Advanced Scoring</h2><p>Advanced Scoring tracks how points were won or lost.</p><p>Tap a player, then select an outcome.</p><h3>Winner (W)</h3><p>A clean offensive shot the opponent cannot return.</p><h3>Forced Error (FE)</h3><p>An opponent misses due to pressure from an aggressive shot.</p><h3>Unforced Error (UE)</h3><p>A missed shot without significant pressure.</p><h3>Double Fault (DF)</h3><p>Missing both serve attempts in a single point.</p><p>Reticla automatically updates the match score based on the selected outcome.</p></section>
 
         <section id="leaderboards"><h2>Leaderboards</h2><p>Reticla generates leaderboards from recorded match data.</p><h3>Session Leaderboard</h3><p>Ranks players based on session performance.</p><h3>Player Statistics</h3><p>Tracks:</p><ul><li>Winners (W)</li><li>Forced Errors (FE)</li><li>Unforced Errors (UE)</li><li>Double Faults (DF)</li><li>Net Score</li><li>Efficiency</li></ul><p>Statistics are recalculated when the leaderboard is refreshed.</p></section>
+
+        <section id="live-session"><h2>Live Session</h2><p>Live Session lets you share a temporary read-only version of your session with players and spectators.</p><h3>How it works</h3><ol><li>Generate at least one round.</li><li>Click <strong>Go Live</strong> in the session.</li><li>Share the generated link.</li><li>Others can view matches, leaderboards, and player stats without signing in.</li></ol><h3>Notes</h3><ul><li>Live links are temporary and expire after 6 hours.</li><li>Hosts can stop a Live Session at any time.</li><li>Resetting matches automatically disables Live Session.</li><li>Visitors cannot edit scores, players, or session settings.</li><li>Data updates when the page is refreshed.</li></ul><h3>FAQ</h3><h4>Why can&apos;t I enable Live Session?</h4><p>You must generate at least one round first.</p><h4>Can visitors edit my session?</h4><p>No. Live Session is read-only.</p><h4>Why is my Live Session unavailable?</h4><p>The link may have expired, been disabled by the host, or the session was reset.</p><h4>Do visitors need a Reticla account?</h4><p>No. Anyone with the link can view the session.</p></section>
 
         <section id="sharing-results"><h2>Sharing Results</h2><p>You can export:</p><ul><li>Session Leaderboards</li><li>Player Statistics</li></ul><p>Available formats:</p><ul><li>Copy as Image</li><li>Download PNG</li></ul><p>Exports use the current device layout and include a transparent background for easy sharing on social media and design tools.</p></section>
 
