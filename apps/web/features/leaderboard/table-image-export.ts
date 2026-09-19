@@ -84,9 +84,10 @@ function renderMobileTable(canvas: HTMLCanvasElement, context: CanvasRenderingCo
     const rankX = inset + (index === 0 ? 10 : 0);
     if (index === 0) {
       context.fillStyle = colors.orange;
-      context.fillRect(inset, y + 7, 3, metric.height - 14);
-      context.fillRect(rankX, top, 32, 32);
+      context.fillRect(inset, y, right - inset, metric.height);
       context.fillStyle = colors.black;
+      context.fillRect(rankX, top, 32, 32);
+      context.fillStyle = colors.orange;
       context.font = '400 23px "Bebas Neue"';
       context.textAlign = "center";
       context.fillText(row.rank, rankX + 16, top + 4);
@@ -96,37 +97,37 @@ function renderMobileTable(canvas: HTMLCanvasElement, context: CanvasRenderingCo
       context.textAlign = "left";
       context.fillText(row.rank, rankX, top);
     }
-    context.fillStyle = colors.foreground;
+    context.fillStyle = index === 0 ? colors.black : colors.foreground;
     context.font = '700 15px "Inter"';
     context.textAlign = "left";
     metric.nameLines.forEach((line, lineIndex) => context.fillText(line, nameX, top + lineIndex * 19));
-    context.fillStyle = colors.orange;
+    context.fillStyle = index === 0 ? colors.black : colors.orange;
     context.font = '400 30px "Bebas Neue"';
     context.textAlign = "right";
     context.fillText(row.primary, right, top - 3);
     context.font = '400 10px "Inter"';
     const secondaryLabelWidth = row.secondaryLabel ? context.measureText(` ${row.secondaryLabel}`).width : 0;
-    context.fillStyle = colors.foreground;
+    context.fillStyle = index === 0 ? colors.black : colors.foreground;
     context.font = '700 13px "Inter"';
     context.fillText(row.secondary, right - secondaryLabelWidth, top + 30);
     if (row.secondaryLabel) {
-      context.fillStyle = colors.secondary;
+      context.fillStyle = index === 0 ? colors.black : colors.secondary;
       context.font = '400 10px "Inter"';
       context.fillText(row.secondaryLabel, right, top + 33);
     }
     const detailY = y + metric.height - (metric.detailWraps ? 15 + metric.detailLines.length * 16 + 15 : 30);
-    context.fillStyle = colors.secondary;
+    context.fillStyle = index === 0 ? colors.black : colors.secondary;
     context.font = '700 10px "Inter"';
     context.textAlign = "left";
     context.fillText(row.detailLabel, nameX, detailY);
-    context.fillStyle = colors.foreground;
+    context.fillStyle = index === 0 ? colors.black : colors.foreground;
     context.font = '700 12px "Inter"';
     context.textAlign = "right";
     if (metric.detailWraps) metric.detailLines.forEach((line, lineIndex) => context.fillText(line, right, detailY + 17 + lineIndex * 16));
     else context.fillText(row.detailValue, right, detailY);
     y += metric.height;
     context.beginPath();
-    context.strokeStyle = colors.border;
+    context.strokeStyle = index === 0 ? colors.orange : colors.border;
     context.lineWidth = 1;
     context.moveTo(inset, y + .5);
     context.lineTo(right, y + .5);
@@ -152,7 +153,7 @@ export async function renderTransparentTablePng(table: ExportTable, layout: Expo
 
   const padding = 24;
   const headerHeight = 54;
-  const minimums = table.type === "leaderboard" ? [70, 280, 72, 72, 100, 110] : [70, 280, 130, 130, 205];
+  const minimums = table.type === "stats" ? [70, 280, 130, 130, 205] : table.headers.length === 7 ? [70, 280, 72, 72, 135, 100, 110] : [70, 280, 72, 72, 100, 110];
   context.font = '700 16px "Inter"';
   const widths = table.headers.map((header, index) => {
     if (index === 1) return Math.max(minimums[index], Math.min(720, Math.ceil(Math.max(...table.rows.map((row) => context.measureText(row[index]).width), 0) + 30)));
@@ -196,9 +197,10 @@ export async function renderTransparentTablePng(table: ExportTable, layout: Expo
     const rowHeight = rowHeights[rowIndex];
     if (rowIndex === 0) {
       context.fillStyle = colors.orange;
-      context.fillRect(padding, y + 7, 3, rowHeight - 14);
-      context.fillRect(edges[0] + 10, y + (rowHeight - 32) / 2, 34, 32);
+      context.fillRect(padding, y, width - 2 * padding, rowHeight);
       context.fillStyle = colors.black;
+      context.fillRect(edges[0] + 10, y + (rowHeight - 32) / 2, 34, 32);
+      context.fillStyle = colors.orange;
       context.font = '400 25px "Bebas Neue"';
       context.textAlign = "center";
       context.fillText("#1", edges[0] + 27, y + rowHeight / 2 + 1);
@@ -208,14 +210,14 @@ export async function renderTransparentTablePng(table: ExportTable, layout: Expo
       context.textAlign = "left";
       context.fillText(row[0], edges[0] + 12, y + rowHeight / 2);
     }
-    context.fillStyle = colors.foreground;
+    context.fillStyle = rowIndex === 0 ? colors.black : colors.foreground;
     context.font = '700 16px "Inter"';
     context.textAlign = "left";
     const lines = nameLines[rowIndex];
     lines.forEach((line, lineIndex) => context.fillText(line, edges[1] + 12, y + rowHeight / 2 + (lineIndex - (lines.length - 1) / 2) * 20));
     row.slice(2).forEach((value, offset) => {
       const index = offset + 2;
-      context.fillStyle = (table.type === "leaderboard" ? index === 5 : index === 2) ? colors.orange : colors.foreground;
+      context.fillStyle = rowIndex === 0 ? colors.black : (table.type === "leaderboard" ? index === table.headers.length - 1 : index === 2) ? colors.orange : colors.foreground;
       context.font = '700 15px "Inter"';
       context.textAlign = "right";
       context.fillText(value, edges[index + 1] - 12, y + rowHeight / 2);

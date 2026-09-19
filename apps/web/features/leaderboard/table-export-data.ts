@@ -8,7 +8,7 @@ export type ExportTable = {
   rows: string[][];
   mobileRows: { rank: string; name: string; primary: string; secondary: string; secondaryLabel?: string; detailLabel: string; detailValue: string }[];
 };
-export type TableExportInput = { type: "leaderboard"; rows: readonly LeaderboardRow[]; partnerMode: PartnerMode } | { type: "stats"; rows: readonly PlayerRankingRow[] };
+export type TableExportInput = { type: "leaderboard"; rows: readonly LeaderboardRow[]; partnerMode: PartnerMode; sport: string } | { type: "stats"; rows: readonly PlayerRankingRow[] };
 
 function signed(value: number) { return value > 0 ? `+${value}` : String(value); }
 
@@ -17,9 +17,9 @@ export function tableExportData(input: TableExportInput): ExportTable {
   if (input.type === "leaderboard") return {
     type: "leaderboard",
     filename: "reticla-leaderboard.png",
-    headers: ["RANK", input.partnerMode === "FIXED" ? "PARTNERS" : "PLAYER", "W", "L", "DIFF", "WIN %"],
-    rows: input.rows.map((row, index) => [index === 0 ? "#1" : String(index + 1).padStart(2, "0"), row.name, String(row.wins), String(row.losses), signed(row.difference), `${row.winPercent.toFixed(1)}%`]),
-    mobileRows: input.rows.map((row, index) => ({ rank: index === 0 ? "#1" : String(index + 1).padStart(2, "0"), name: row.name, primary: `${row.winPercent.toFixed(1)}%`, secondary: `${row.wins} W · ${row.losses} L`, detailLabel: "DIFF / PLAYED", detailValue: `${signed(row.difference)} / ${row.matchesPlayed}` })),
+    headers: ["RANK", input.partnerMode === "FIXED" ? "PARTNERS" : "PLAYER", "W", "L", ...(input.sport === "PADEL" ? ["TOTAL SCORE"] : []), "DIFF", "WIN %"],
+    rows: input.rows.map((row, index) => [index === 0 ? "#1" : String(index + 1).padStart(2, "0"), row.name, String(row.wins), String(row.losses), ...(input.sport === "PADEL" ? [String(row.gamesWon)] : []), signed(row.difference), `${row.winPercent.toFixed(1)}%`]),
+    mobileRows: input.rows.map((row, index) => ({ rank: index === 0 ? "#1" : String(index + 1).padStart(2, "0"), name: row.name, primary: `${row.winPercent.toFixed(1)}%`, secondary: `${row.wins} W · ${row.losses} L`, detailLabel: input.sport === "PADEL" ? "TOTAL SCORE / DIFF" : "DIFF / PLAYED", detailValue: input.sport === "PADEL" ? `${row.gamesWon} / ${signed(row.difference)}` : `${signed(row.difference)} / ${row.matchesPlayed}` })),
   };
   return {
     type: "stats",

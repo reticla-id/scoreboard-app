@@ -19,7 +19,7 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ id
     <WorkspaceHeader profile={profile} />
     <BackLink href="/home" />
     <SessionWorkspaceHeading session={session} active="leaderboard" />
-    <ResultsView sessionId={id} {...results} eventGlossary={session.sportConfig.rules.eventGlossary} />
+    <ResultsView sessionId={id} sport={session.sport} {...results} eventGlossary={session.sportConfig.rules.eventGlossary} />
     <AppFooter />
   </main>;
 }

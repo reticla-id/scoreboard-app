@@ -6,8 +6,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { advanceMatch, changeScore, recordMatchEvent, resetScore, saveFinishedScore } from "./actions";
 import { EVENT_TYPES, changeDisplayedScore, projectScore, type EventType, type Score, type ScoreOperation, type TeamSide } from "./scoring";
 import { ResetMatchesForm } from "./reset-matches-form";
-import { ArrowRightIcon, ArrowUpRightIcon } from "@/components/action-icons";
+import { ArrowUpRightIcon } from "@/components/action-icons";
 import { RoundSelector } from "./round-selector";
+import { GenerateRoundForm } from "./generate-round-form";
 
 type MatchPlayer = { id: string; name: string };
 type EventCount = { playerId: string; type: string; count: number };
@@ -184,13 +185,14 @@ function MatchLine({ match, sessionId, onGlossary, eventGlossary }: { match: Mat
 
 export function MatchWorkspace({ sessionId, rounds, current, page, pages, minimumPlayers, eventGlossary, completed = false }: { sessionId: string; rounds: RoundSummary[]; current: RoundView | null; page: number; pages: number; minimumPlayers: number; eventGlossary: EventGlossary; completed?: boolean }) {
   const glossaryRef = useRef<HTMLDialogElement>(null);
-  const heading = <div className="games-heading"><div><h2>MATCHES.</h2></div>{!completed && current && <Link className="text-link" href={`/sessions/${sessionId}/players`}>Players / generate another round <ArrowRightIcon /></Link>}</div>;
+  const heading = <div className="games-heading"><div><h2>MATCHES.</h2></div></div>;
   if (!current) return <div className="games-workspace">{heading}<section className="games-empty"><h3>{completed ? "NO MATCHES RECORDED." : <>PLAYERS FIRST.<br />GAMES NEXT.</>}</h3><p className="muted">{completed ? "This session is finished. Its schedule is locked." : `Save at least ${minimumPlayers} players, then generate a doubles round from Players.`}</p><Link className="button" href={`/sessions/${sessionId}/players`}>View players <ArrowUpRightIcon /></Link></section></div>;
   const base = `/sessions/${sessionId}/matches?round=${current.number}`;
   return <div className="games-workspace">{heading}
     <RoundSelector rounds={rounds} selected={current} basePath={`/sessions/${sessionId}/matches`} />
     <section className="round-section" id={`round-${current.number}`} aria-label={`Round ${current.number} matches`}>
       <div className="game-list">{current.matches.map((match) => <MatchLine key={`${match.id}:${match.updatedAt}`} match={match} sessionId={sessionId} eventGlossary={eventGlossary} onGlossary={() => glossaryRef.current?.showModal()} />)}</div>
+      {!completed && page === pages && <GenerateRoundForm sessionId={sessionId} nextNumber={(rounds[0]?.number ?? current.number) + 1} availability={{ enabled: true, message: "" }} context="matches" />}
       {pages > 1 && <nav className="game-pagination" aria-label="Match pages"><span>Showing {(page - 1) * 50 + 1}–{Math.min(page * 50, current.matchCount)} of {current.matchCount.toLocaleString("en-US")}</span><div>{page > 1 && <Link className="button button-secondary button-small" href={`${base}&page=${page - 1}`}>Previous</Link>}{page < pages && <Link className="button button-secondary button-small" href={`${base}&page=${page + 1}`}>Next</Link>}</div></nav>}
       {current.waiting.length > 0 && <div className="round-waiting"><strong>WAITING THIS ROUND</strong><span>{current.waiting.join(" · ")}</span></div>}
     </section>

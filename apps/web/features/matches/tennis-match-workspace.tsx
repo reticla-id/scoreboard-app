@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon, ArrowUpRightIcon } from "@/components/action-icons";
+import { ArrowUpRightIcon } from "@/components/action-icons";
 import { RoundSelector } from "./round-selector";
+import { GenerateRoundForm } from "./generate-round-form";
 import { ResetMatchesForm } from "./reset-matches-form";
 import { advanceMatch, changeTennisPoint, finishTennisMatch } from "./actions";
 import { calculateTennisScore, tennisGameTotals, type TennisScore, type TennisSide } from "@/features/sports/tennis/scoring";
@@ -71,8 +72,8 @@ function TennisMatch({ match, sessionId }: { match: TennisMatchRow; sessionId: s
 }
 
 export function TennisMatchWorkspace({ sessionId, rounds, current, page, pages, completed = false }: { sessionId: string; rounds: RoundSummary[]; current: TennisRoundView | null; page: number; pages: number; completed?: boolean }) {
-  const heading = <div className="games-heading"><div><h2>MATCHES.</h2></div>{!completed && current && <Link className="text-link" href={`/sessions/${sessionId}/players`}>Players / generate another round <ArrowRightIcon /></Link>}</div>;
+  const heading = <div className="games-heading"><div><h2>MATCHES.</h2></div></div>;
   if (!current) return <div className="games-workspace">{heading}<section className="games-empty"><h3>{completed ? "NO MATCHES RECORDED." : <>PLAYERS FIRST.<br />GAMES NEXT.</>}</h3><p className="muted">{completed ? "This session is finished. Its schedule is locked." : "Save players, then generate a Tennis round from Players."}</p><Link className="button" href={`/sessions/${sessionId}/players`}>View players <ArrowUpRightIcon /></Link></section></div>;
   const base = `/sessions/${sessionId}/matches?round=${current.number}`;
-  return <div className="games-workspace">{heading}<RoundSelector rounds={rounds} selected={current} basePath={`/sessions/${sessionId}/matches`} /><section className="round-section" aria-label={`Round ${current.number} matches`}><div className="game-list">{current.matches.map((match) => <TennisMatch key={`${match.id}:${match.updatedAt}`} match={match} sessionId={sessionId} />)}</div>{pages > 1 && <nav className="game-pagination" aria-label="Match pages"><span>Page {page} of {pages}</span><div>{page > 1 && <Link className="button button-secondary button-small" href={`${base}&page=${page - 1}`}>Previous</Link>}{page < pages && <Link className="button button-secondary button-small" href={`${base}&page=${page + 1}`}>Next</Link>}</div></nav>}</section>{!completed && <ResetMatchesForm sessionId={sessionId} />}</div>;
+  return <div className="games-workspace">{heading}<RoundSelector rounds={rounds} selected={current} basePath={`/sessions/${sessionId}/matches`} /><section className="round-section" aria-label={`Round ${current.number} matches`}><div className="game-list">{current.matches.map((match) => <TennisMatch key={`${match.id}:${match.updatedAt}`} match={match} sessionId={sessionId} />)}</div>{!completed && page === pages && <GenerateRoundForm sessionId={sessionId} nextNumber={(rounds[0]?.number ?? current.number) + 1} availability={{ enabled: true, message: "" }} context="matches" />}{pages > 1 && <nav className="game-pagination" aria-label="Match pages"><span>Page {page} of {pages}</span><div>{page > 1 && <Link className="button button-secondary button-small" href={`${base}&page=${page - 1}`}>Previous</Link>}{page < pages && <Link className="button button-secondary button-small" href={`${base}&page=${page + 1}`}>Next</Link>}</div></nav>}</section>{!completed && <ResetMatchesForm sessionId={sessionId} />}</div>;
 }

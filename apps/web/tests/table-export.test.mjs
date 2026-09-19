@@ -3,19 +3,21 @@ import test from "node:test";
 import { tableExportData } from "../features/leaderboard/table-export-data.ts";
 import { copyPng, downloadPng, renderTransparentTablePng, visibleExportLayout } from "../features/leaderboard/table-image-export.ts";
 
-const standing = (id, name, wins, losses, difference, winPercent) => ({ id, name, wins, losses, difference, winPercent, matchesPlayed: wins + losses, gamesWon: 0, gamesLost: 0 });
+const standing = (id, name, wins, losses, difference, winPercent, gamesWon = 0) => ({ id, name, wins, losses, difference, winPercent, matchesPlayed: wins + losses, gamesWon, gamesLost: 0 });
 const player = (id, name, netScore, efficiency, winners, forcedErrors, unforcedErrors, doubleFaults) => ({ id, name, netScore, efficiency, winners, forcedErrors, unforcedErrors, doubleFaults, wins: 0 });
 
 test("leaderboard export keeps the displayed random and fixed-partner columns and ordering", () => {
-  const rows = [standing("b", "Budi", 3, 1, 7, 75), standing("a", "Andi", 1, 2, -2, 33.3333)];
-  const random = tableExportData({ type: "leaderboard", rows, partnerMode: "RANDOM" });
-  assert.deepEqual(random.headers, ["RANK", "PLAYER", "W", "L", "DIFF", "WIN %"]);
-  assert.deepEqual(random.rows, [["#1", "Budi", "3", "1", "+7", "75.0%"], ["02", "Andi", "1", "2", "-2", "33.3%"]]);
+  const rows = [standing("b", "Budi", 3, 1, 7, 75, 18), standing("a", "Andi", 1, 2, -2, 33.3333, 9)];
+  const random = tableExportData({ type: "leaderboard", rows, partnerMode: "RANDOM", sport: "PADEL" });
+  assert.deepEqual(random.headers, ["RANK", "PLAYER", "W", "L", "TOTAL SCORE", "DIFF", "WIN %"]);
+  assert.deepEqual(random.rows, [["#1", "Budi", "3", "1", "18", "+7", "75.0%"], ["02", "Andi", "1", "2", "9", "-2", "33.3%"]]);
   assert.equal(random.filename, "reticla-leaderboard.png");
-  assert.deepEqual(random.mobileRows[0], { rank: "#1", name: "Budi", primary: "75.0%", secondary: "3 W · 1 L", detailLabel: "DIFF / PLAYED", detailValue: "+7 / 4" });
-  const fixed = tableExportData({ type: "leaderboard", rows: [standing("a:b", "Andi + Budi", 2, 0, 5, 100)], partnerMode: "FIXED" });
+  assert.deepEqual(random.mobileRows[0], { rank: "#1", name: "Budi", primary: "75.0%", secondary: "3 W · 1 L", detailLabel: "TOTAL SCORE / DIFF", detailValue: "18 / +7" });
+  const fixed = tableExportData({ type: "leaderboard", rows: [standing("a:b", "Andi + Budi", 2, 0, 5, 100)], partnerMode: "FIXED", sport: "PADEL" });
   assert.equal(fixed.headers[1], "PARTNERS");
   assert.equal(fixed.rows[0][1], "Andi + Budi");
+  const tennis = tableExportData({ type: "leaderboard", rows, partnerMode: "RANDOM", sport: "TENNIS" });
+  assert.deepEqual(tennis.headers, ["RANK", "PLAYER", "W", "L", "DIFF", "WIN %"]);
 });
 
 test("Player Stats export keeps individual net, efficiency, and all four outcomes", () => {
@@ -62,7 +64,7 @@ test("transparent canvas renders every row, waits for fonts, and never fills the
   globalThis.document = { fonts: { load: async (font) => { calls.fonts.push(font); return []; }, ready: Promise.resolve() }, createElement: () => canvas };
   try {
     const longName = "Alexandria Very Long Courtside Player Name ".repeat(5);
-    const table = tableExportData({ type: "leaderboard", rows: Array.from({ length: 120 }, (_, index) => standing(String(index), index === 0 ? longName : `Player ${index}`, 1, 0, 2, 100)), partnerMode: "RANDOM" });
+    const table = tableExportData({ type: "leaderboard", rows: Array.from({ length: 120 }, (_, index) => standing(String(index), index === 0 ? longName : `Player ${index}`, 1, 0, 2, 100)), partnerMode: "RANDOM", sport: "PADEL" });
     const blob = await renderTransparentTablePng(table);
     assert.equal(blob.type, "image/png");
     assert.ok(calls.fonts.some((font) => font.includes("Inter")));
@@ -71,8 +73,9 @@ test("transparent canvas renders every row, waits for fonts, and never fills the
     assert.equal(calls.clear[0][0], 0);
     assert.equal(calls.clear[0][1], 0);
     assert.ok(calls.width > 900 && calls.height > 5000);
-    assert.ok(calls.fills.every(([, , width, height]) => width <= 3 || width <= 34 && height <= 32), "Only the rank accent may be filled, never the canvas background.");
-    assert.ok(calls.textColors.includes("#ffffff") && calls.textColors.includes("#f47b20"));
+    assert.ok(calls.fills.some(([, , width, height]) => width > 500 && height < 200), "The leader row receives a full orange highlight.");
+    assert.ok(calls.fills.every(([, , width, height]) => width < calls.width / 2 && height < 200), "The canvas/page background remains transparent.");
+    assert.ok(calls.textColors.includes("#ffffff") && calls.textColors.includes("#000000"));
     assert.ok(calls.borders.length > 120 && calls.borders.every((color) => color === "#2a2a2a"));
     assert.equal(calls.text.filter((value) => /^Player \d+$/.test(value)).length, 119);
     assert.ok(calls.text.join("").includes("Alexandria"), "The long name is wrapped rather than clipped.");
@@ -82,12 +85,13 @@ test("transparent canvas renders every row, waits for fonts, and never fills the
     for (const mobileWidth of [288, 343, 358, 398]) {
       calls.text.length = 0;
       calls.fills.length = 0;
-      await renderTransparentTablePng(tableExportData({ type: "leaderboard", rows: [standing("a", longName, 3, 1, 7, 75), standing("b", "Budi", 1, 2, -2, 33.3)], partnerMode: "RANDOM" }), "mobile", mobileWidth);
+      await renderTransparentTablePng(tableExportData({ type: "leaderboard", rows: [standing("a", longName, 3, 1, 7, 75), standing("b", "Budi", 1, 2, -2, 33.3)], partnerMode: "RANDOM", sport: "PADEL" }), "mobile", mobileWidth);
       assert.equal(calls.width, mobileWidth * 2);
-      assert.ok(calls.text.includes("75.0%") && calls.text.includes("DIFF / PLAYED") && calls.text.includes("+7 / 4"));
+      assert.ok(calls.text.includes("75.0%") && calls.text.includes("TOTAL SCORE / DIFF") && calls.text.includes("0 / +7"));
       assert.ok(!calls.text.includes("RANK") && !calls.text.includes("WIN %"), "Mobile output uses compact rows, not the desktop header.");
       assert.ok(calls.text.filter((value) => value.includes("Alexandria")).length > 1, "Long names wrap within the mobile row.");
-      assert.ok(calls.fills.every(([, , width, height]) => width <= 32 && height <= 32 || width === 3), "Mobile background remains transparent.");
+      assert.ok(calls.fills.some(([, , width, height]) => width === mobileWidth - 8 && height >= 112), "The mobile leader row is highlighted.");
+      assert.ok(calls.fills.every(([, , width, height]) => width <= mobileWidth - 8 && height < calls.height / 2), "Mobile page background remains transparent.");
     }
     calls.text.length = 0;
     await renderTransparentTablePng(stats, "mobile", 288);

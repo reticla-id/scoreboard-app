@@ -4,16 +4,25 @@ import { requireWorkspace } from "@/lib/auth";
 import { avatarSource } from "@/features/profile/avatar";
 import { SettingsForm } from "@/features/profile/settings-form";
 import { SettingsSignOut } from "@/features/profile/settings-sign-out";
+import { listDeviceSessions } from "@/features/auth/devices";
+import { DevicesPanel } from "@/features/auth/devices-panel";
 
 export const metadata: Metadata = { title: "Profile & Settings" };
 
 export default async function SettingsPage() {
-  const { profile, email } = await requireWorkspace();
+  const { id, sessionId, profile, email } = await requireWorkspace();
+  const devices = (await listDeviceSessions(id)).map((device) => ({
+    sessionId: device.sessionId,
+    deviceName: device.deviceName,
+    deviceType: device.deviceType,
+    current: device.sessionId === sessionId,
+    lastActive: new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(device.lastSeenAt) + " UTC",
+  }));
   return <main className="site-shell settings-page">
     <BackLink href="/home" previous />
     <header className="settings-head"><p className="eyebrow"><span className="dot" /> YOUR ACCOUNT</p><h1>PROFILE &amp;<br />SETTINGS.</h1></header>
     <SettingsForm displayName={profile.displayName} username={profile.username} email={email ?? "Email unavailable"} avatarSrc={avatarSource(profile.avatarUrl, profile.updatedAt)} />
-    <section className="future-settings" aria-labelledby="future-settings-heading"><span className="panel-index">MORE CONTROLS</span><h2 id="future-settings-heading">MORE SETTINGS, SOON.</h2><p>Additional account preferences will appear here as Reticla grows.</p></section>
+    <DevicesPanel devices={devices} />
     <SettingsSignOut />
   </main>;
 }
